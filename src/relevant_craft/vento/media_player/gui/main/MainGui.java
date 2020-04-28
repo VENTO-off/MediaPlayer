@@ -5,9 +5,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.stage.Stage;
+import relevant_craft.vento.media_player.gui.main.elements.TitleButton;
 
 public class MainGui {
+
     private static final int WIDTH = 800;
     private static final int HEIGHT = 550;
 
@@ -18,12 +21,15 @@ public class MainGui {
     private static MainGui instance;
     private double xOffset;
     private double yOffset;
-    private Stage stage;
-    private Pane root;
+    private final Stage stage;
+    private final Pane root;
     private AnchorPane layout;
     private Pane title;
     private Pane control;
     private Pane navigation;
+    private Pane visualization;
+    private TitleButton close;
+    private TitleButton minimize;
 
     public MainGui(Stage primaryStage) {
         instance = this;
@@ -38,6 +44,7 @@ public class MainGui {
         initTitle();
         initControl();
         initNavigation();
+        initVisualization();
 
         root.getChildren().setAll(layout);
     }
@@ -74,11 +81,19 @@ public class MainGui {
         );
         title.setOnMousePressed(this::onDrag);
         title.setOnMouseDragged(this::onRelease);
+        title.setEffect(createShadow(5, 0.3, false));
 
-        DropShadow shadow = new DropShadow(5, Color.web(Color.BLACK.toString(), 0.5));
-        shadow.setWidth(0);
-        shadow.setOffsetY(shadow.getRadius());
-        title.setEffect(shadow);
+        minimize = new TitleButton(
+                title.getPrefWidth() - TitleButton.getSize() - 46,
+                title.getPrefHeight() / 2 - TitleButton.getSize() / 2,
+                "minimize icon.png");
+        title.getChildren().add(minimize);
+
+        close = new TitleButton(
+                title.getPrefWidth() - TitleButton.getSize() - 16,
+                title.getPrefHeight() / 2 - TitleButton.getSize() / 2,
+                "close_icon.png");
+        title.getChildren().add(close);
 
         layout.getChildren().add(title);
     }
@@ -94,13 +109,17 @@ public class MainGui {
                         "-fx-background-radius: 0px 0px 5px 5px;"
         );
         control.setLayoutY(layout.getPrefHeight() - control.getPrefHeight());
-
-        DropShadow shadow = new DropShadow(10, Color.web(Color.BLACK.toString(), 0.3));
-        shadow.setWidth(0);
-        shadow.setOffsetY(shadow.getRadius() * -1);
-        control.setEffect(shadow);
+        control.setEffect(createShadow(10, 0.3, true));
 
         layout.getChildren().add(control);
+    }
+
+    private DropShadow createShadow(double radius, double opacity, boolean negativeOffsetY) {
+        DropShadow shadow = new DropShadow(radius, Color.web(Color.BLACK.toString(), opacity));
+        shadow.setWidth(0);
+        shadow.setOffsetY(shadow.getRadius() * (negativeOffsetY ? -1 : 1));
+
+        return shadow;
     }
 
     private void initNavigation() {
@@ -113,6 +132,28 @@ public class MainGui {
         navigation.setLayoutY(title.getPrefHeight());
 
         layout.getChildren().add(0, navigation);
+    }
+
+    private void initVisualization() {
+        visualization = new Pane();
+        visualization.setPrefSize(594, 129);
+        visualization.setStyle(
+                "-fx-background-color: " + navigationColor + ";"
+        );
+        visualization.setLayoutX((layout.getPrefWidth() - navigation.getPrefWidth()) / 2 - visualization.getPrefWidth() / 2 + navigation.getPrefWidth());
+        visualization.setLayoutY(title.getPrefHeight());
+        visualization.setEffect(new DropShadow(5, Color.web(Color.BLACK.toString(), 0.50)));
+
+        Line separator = new Line();
+        separator.setStroke(Color.web("#FFFFFF", 0.1));
+        separator.setStrokeWidth(2);
+        separator.setStartX(0);
+        separator.setStartY(visualization.getPrefHeight() - 27);
+        separator.setEndX(visualization.getPrefWidth());
+        separator.setEndY(separator.getStartY());
+        visualization.getChildren().add(separator);
+
+        layout.getChildren().add(0, visualization);
     }
 
     public static MainGui getInstance() {

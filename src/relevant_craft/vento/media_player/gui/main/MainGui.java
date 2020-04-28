@@ -8,6 +8,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import relevant_craft.vento.media_player.gui.main.elements.TitleButton;
+import relevant_craft.vento.media_player.manager.picture.Pictures;
 
 public class MainGui {
 
@@ -86,13 +87,15 @@ public class MainGui {
         minimize = new TitleButton(
                 title.getPrefWidth() - TitleButton.getSize() - 46,
                 title.getPrefHeight() / 2 - TitleButton.getSize() / 2,
-                "minimize icon.png");
+                Pictures.MINIMIZE_ICON,
+                Color.web("#57646B"));
         title.getChildren().add(minimize);
 
         close = new TitleButton(
                 title.getPrefWidth() - TitleButton.getSize() - 16,
                 title.getPrefHeight() / 2 - TitleButton.getSize() / 2,
-                "close_icon.png");
+                Pictures.CLOSE_ICON,
+                Color.web("#DB4848"));
         title.getChildren().add(close);
 
         layout.getChildren().add(title);

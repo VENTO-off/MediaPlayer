@@ -1,10 +1,13 @@
 package relevant_craft.vento.media_player.gui.main;
 
+import javafx.geometry.Insets;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import relevant_craft.vento.media_player.gui.main.elements.TitleButton;
@@ -15,9 +18,11 @@ public class MainGui {
     private static final int WIDTH = 800;
     private static final int HEIGHT = 550;
 
-    private static final String layoutColor = "#303030";
-    private static final String titleColor = "#232323";
-    private static final String navigationColor = "#272727";
+    private static final Color layoutColor = Color.web("#303030");
+    private static final Color titleColor = Color.web("#232323");
+    private static final Color navigationColor = Color.web("#272727");
+    private static final Color minimizeColor = Color.web("#57646B");
+    private static final Color closeColor = Color.web("#DB4848");
 
     private static MainGui instance;
     private double xOffset;
@@ -64,10 +69,7 @@ public class MainGui {
         layout = new AnchorPane();
         layout.setPrefWidth(WIDTH);
         layout.setPrefHeight(HEIGHT);
-        layout.setStyle(
-                "-fx-background-color: " + layoutColor + ";" +
-                        "-fx-background-radius: 5px;"
-        );
+        layout.setBackground(new Background(new BackgroundFill(layoutColor, new CornerRadii(5), Insets.EMPTY)));
         layout.setEffect(new DropShadow(10, Color.web(Color.BLACK.toString(), 0.75)));
         layout.setLayoutX(root.getPrefWidth() / 2 - layout.getPrefWidth() / 2);
         layout.setLayoutY(root.getPrefHeight() / 2 - layout.getPrefHeight() / 2);
@@ -76,10 +78,7 @@ public class MainGui {
     private void initTitle() {
         title = new Pane();
         title.setPrefSize(layout.getPrefWidth(), 30);
-        title.setStyle(
-                "-fx-background-color: " + titleColor + ";" +
-                        "-fx-background-radius: 5px 5px 0px 0px;"
-        );
+        title.setBackground(new Background(new BackgroundFill(titleColor, new CornerRadii(5, 5, 0, 0, false), Insets.EMPTY)));
         title.setOnMousePressed(this::onDrag);
         title.setOnMouseDragged(this::onRelease);
         title.setEffect(createShadow(5, 0.3, false));
@@ -88,14 +87,14 @@ public class MainGui {
                 title.getPrefWidth() - TitleButton.getSize() - 46,
                 title.getPrefHeight() / 2 - TitleButton.getSize() / 2,
                 Pictures.MINIMIZE_ICON,
-                Color.web("#57646B"));
+                minimizeColor);
         title.getChildren().add(minimize);
 
         close = new TitleButton(
                 title.getPrefWidth() - TitleButton.getSize() - 16,
                 title.getPrefHeight() / 2 - TitleButton.getSize() / 2,
                 Pictures.CLOSE_ICON,
-                Color.web("#DB4848"));
+                closeColor);
         title.getChildren().add(close);
 
         layout.getChildren().add(title);
@@ -107,10 +106,17 @@ public class MainGui {
 
         control = new Pane();
         control.setPrefSize(layout.getPrefWidth(), 70);
-        control.setStyle(
-                "-fx-background-color: linear-gradient(to right, " + averageColor + ", " + layoutColor + ");" +
-                        "-fx-background-radius: 0px 0px 5px 5px;"
+        LinearGradient gradient = new LinearGradient(
+                0,
+                0,
+                1,
+                0,
+                true,
+                CycleMethod.NO_CYCLE,
+                new Stop(0, Color.web(averageColor)),
+                new Stop(1, layoutColor)
         );
+        control.setBackground(new Background(new BackgroundFill(gradient, new CornerRadii(0, 0, 5, 5, false), Insets.EMPTY)));
         control.setLayoutY(layout.getPrefHeight() - control.getPrefHeight());
         control.setEffect(createShadow(10, 0.3, true));
 
@@ -129,9 +135,7 @@ public class MainGui {
         navigation = new Pane();
         navigation.setPrefWidth(173);
         navigation.setPrefHeight(layout.getPrefHeight() - title.getPrefHeight() - control.getPrefHeight());
-        navigation.setStyle(
-                "-fx-background-color: " + navigationColor + ";"
-        );
+        navigation.setBackground(new Background(new BackgroundFill(navigationColor, CornerRadii.EMPTY, Insets.EMPTY)));
         navigation.setLayoutY(title.getPrefHeight());
 
         layout.getChildren().add(0, navigation);
@@ -140,15 +144,13 @@ public class MainGui {
     private void initVisualization() {
         visualization = new Pane();
         visualization.setPrefSize(594, 129);
-        visualization.setStyle(
-                "-fx-background-color: " + navigationColor + ";"
-        );
+        visualization.setBackground(new Background(new BackgroundFill(navigationColor, CornerRadii.EMPTY, Insets.EMPTY)));
         visualization.setLayoutX((layout.getPrefWidth() - navigation.getPrefWidth()) / 2 - visualization.getPrefWidth() / 2 + navigation.getPrefWidth());
         visualization.setLayoutY(title.getPrefHeight());
         visualization.setEffect(new DropShadow(5, Color.web(Color.BLACK.toString(), 0.50)));
 
         Line separator = new Line();
-        separator.setStroke(Color.web("#FFFFFF", 0.1));
+        separator.setStroke(Color.web(Color.WHITE.toString(), 0.1));
         separator.setStrokeWidth(2);
         separator.setStartX(0);
         separator.setStartY(visualization.getPrefHeight() - 27);

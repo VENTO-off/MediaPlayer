@@ -3,6 +3,7 @@ package relevant_craft.vento.media_player.manager.picture;
 public enum Pictures {
     MINIMIZE_ICON("minimize icon.png"),
     CLOSE_ICON("close_icon.png"),
+    LOGO("logo.png"),
     ;
 
     private String iconName;

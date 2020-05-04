@@ -10,6 +10,7 @@ public enum Colors {
     CLOSE_COLOR_GLOW("#DB4848"),
     MIDDLE_COLOR_TITLE_BUTTON("#303030"),
     BORDER_COLOR_TITLE_BUTTON("#232323"),
+    SLIDER_TOTAL_COLOR("#626365"),
     ;
 
     private Color color;

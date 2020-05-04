@@ -12,6 +12,8 @@ import relevant_craft.vento.media_player.manager.color.Colors;
 public class Control extends Pane {
     private final AnchorPane layout;
 
+    private ControlSlider songSlider;
+
     /**
      * Init control bar
      */
@@ -21,6 +23,7 @@ public class Control extends Pane {
         this.layout = layout;
 
         this.initControl();
+        this.initSongSlider();
 
         layout.getChildren().add(this);
     }
@@ -28,7 +31,7 @@ public class Control extends Pane {
     /**
      * Init control layout
      */
-    public void initControl() {
+    private void initControl() {
         //TODO pass average color
         final String averageColor = "#6b80c1";
 
@@ -50,5 +53,13 @@ public class Control extends Pane {
         shadow.setWidth(0);
         shadow.setOffsetY(shadow.getRadius() * -1);
         this.setEffect(shadow);
+    }
+
+    /**
+     * Init song slider
+     */
+    private void initSongSlider() {
+        songSlider = new ControlSlider(267, 48, 265);
+        this.getChildren().add(songSlider);
     }
 }

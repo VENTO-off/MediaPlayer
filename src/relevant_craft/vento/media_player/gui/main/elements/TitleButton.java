@@ -1,6 +1,5 @@
 package relevant_craft.vento.media_player.gui.main.elements;
 
-
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -15,14 +14,14 @@ import javafx.scene.paint.RadialGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import relevant_craft.vento.media_player.manager.color.Colors;
 import relevant_craft.vento.media_player.manager.picture.PictureManager;
 import relevant_craft.vento.media_player.manager.picture.Pictures;
 
 public class TitleButton extends StackPane {
-
     private static final double size = 22;
-    private static final Color middleColor = Color.web("#303030");
-    private static final Color borderColor = Color.web("#232323");
+    private static final Duration fadeIn = Duration.millis(200);
+    private static final Duration fadeOut = Duration.millis(500);
 
     private Rectangle rectangle;
     private Rectangle color;
@@ -30,13 +29,17 @@ public class TitleButton extends StackPane {
     private Timeline animation;
     private ClickListener clickListener;
 
+    /**
+     * Init button for title bar
+     */
     public TitleButton(double positionX, double positionY, Pictures icon, Color activeColor) {
         super();
         this.setLayoutX(positionX);
         this.setLayoutY(positionY);
 
+        //init button's border
         rectangle = new Rectangle(size, size);
-        rectangle.setStroke(middleColor);
+        rectangle.setStroke(Colors.MIDDLE_COLOR_TITLE_BUTTON.getColor());
         rectangle.setStrokeWidth(1);
         rectangle.setArcHeight(5);
         rectangle.setArcWidth(5);
@@ -48,8 +51,8 @@ public class TitleButton extends StackPane {
                 getSize() / 2,
                 false,
                 CycleMethod.NO_CYCLE,
-                new Stop(0, middleColor),
-                new Stop(1, borderColor)
+                new Stop(0, Colors.MIDDLE_COLOR_TITLE_BUTTON.getColor()),
+                new Stop(1, Colors.BORDER_COLOR_TITLE_BUTTON.getColor())
         ));
         rectangle.setDisable(true);
         this.setOnMouseEntered(this::onHover);
@@ -57,6 +60,7 @@ public class TitleButton extends StackPane {
         this.setOnMouseClicked(this::onClick);
         this.getChildren().add(rectangle);
 
+        //glow on hover
         color = new Rectangle(size, size);
         color.setArcHeight(rectangle.getArcHeight());
         color.setArcWidth(rectangle.getArcWidth());
@@ -69,7 +73,7 @@ public class TitleButton extends StackPane {
                 false,
                 CycleMethod.NO_CYCLE,
                 new Stop(0, activeColor),
-                new Stop(1, borderColor)
+                new Stop(1, Colors.BORDER_COLOR_TITLE_BUTTON.getColor())
         ));
         color.setDisable(true);
         color.setOpacity(0.0);
@@ -80,14 +84,23 @@ public class TitleButton extends StackPane {
         this.getChildren().add(image);
     }
 
+    /**
+     * Click listener
+     */
     public interface ClickListener {
         void onClick();
     }
 
+    /**
+     * Add click listener
+     */
     public void addClickListener(ClickListener clickListener) {
         this.clickListener = clickListener;
     }
 
+    /**
+     * Play animation on hover
+     */
     private void onHover(MouseEvent e) {
         this.setCursor(Cursor.HAND);
 
@@ -95,10 +108,13 @@ public class TitleButton extends StackPane {
             animation.stop();
         }
 
-        animation = new Timeline(new KeyFrame(Duration.millis(200), new KeyValue(color.opacityProperty(), 1.0)));
+        animation = new Timeline(new KeyFrame(fadeIn, new KeyValue(color.opacityProperty(), 1.0)));
         animation.play();
     }
 
+    /**
+     * Play animation on release
+     */
     private void onRelease(MouseEvent e) {
         this.setCursor(Cursor.DEFAULT);
 
@@ -106,16 +122,22 @@ public class TitleButton extends StackPane {
             animation.stop();
         }
 
-        animation = new Timeline(new KeyFrame(Duration.millis(1000), new KeyValue(color.opacityProperty(), 0.0)));
+        animation = new Timeline(new KeyFrame(fadeOut, new KeyValue(color.opacityProperty(), 0.0)));
         animation.play();
     }
 
+    /**
+     * Notify listener on click
+     */
     private void onClick(MouseEvent mouseEvent) {
         if (clickListener != null) {
             clickListener.onClick();
         }
     }
 
+    /**
+     * Get button size
+     */
     public static double getSize() {
         return size;
     }

@@ -13,7 +13,7 @@ public enum Colors {
     SLIDER_TOTAL_COLOR("#626365"),
     ;
 
-    private Color color;
+    private final Color color;
 
     Colors(String colorHex) {
         this.color = Color.web(colorHex);

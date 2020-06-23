@@ -5,7 +5,7 @@ public enum Fonts {
     SEGOE_UI_BOLD("segoe_ui_bold.ttf"),
     ;
 
-    private String fontName;
+    private final String fontName;
 
     Fonts(String fontName) {
         this.fontName = fontName;

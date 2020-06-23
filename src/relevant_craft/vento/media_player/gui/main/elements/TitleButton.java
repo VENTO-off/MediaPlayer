@@ -79,6 +79,7 @@ public class TitleButton extends StackPane {
         color.setOpacity(0.0);
         this.getChildren().add(color);
 
+        //render image
         image = new ImageView(PictureManager.loadImage(icon.getIconName()));
         image.setDisable(true);
         this.getChildren().add(image);

@@ -25,6 +25,11 @@ public class Control extends Pane {
     private ImageView cover;
     private Text songName;
     private Text artistName;
+    private ControlButton previousButton;
+    private ControlButton nextButton;
+    private ControlButton repeatButton;
+    private ControlButton randomButton;
+    private ControlButton muteButton;
 
     /**
      * Init control bar
@@ -39,6 +44,7 @@ public class Control extends Pane {
         this.initVolumeSlider();
         this.initCoverArt();
         this.initSongInfo();
+        this.initSongButtons();
 
         layout.getChildren().add(this);
     }
@@ -74,7 +80,7 @@ public class Control extends Pane {
      * Init song slider
      */
     private void initSongSlider() {
-        songSlider = new ControlSlider(267, 48, 265);
+        songSlider = new ControlSlider(267, 48, 265, this, true);
         this.getChildren().add(songSlider);
     }
 
@@ -82,7 +88,7 @@ public class Control extends Pane {
      * Init volume slider
      */
     private void initVolumeSlider() {
-        volumeSlider = new ControlSlider(686, 36, 100);
+        volumeSlider = new ControlSlider(686, height / 2 - ControlSlider.getRadius() / 2, 100, this, false);
         this.getChildren().add(volumeSlider);
     }
 
@@ -91,7 +97,8 @@ public class Control extends Pane {
      */
     private void initCoverArt() {
         cover = new ImageView();
-        cover.setImage(PictureManager.loadImage(Pictures.LOGO.getIconName()));
+        //TODO remove test cover
+        cover.setImage(PictureManager.loadImage(Pictures.TEST_COVER.getIconName()));
         cover.setFitWidth(height);
         cover.setFitHeight(height);
         cover.setPreserveRatio(true);
@@ -109,6 +116,8 @@ public class Control extends Pane {
         songName.setY(20 + fixY);
         songName.setFill(Color.WHITE);
         songName.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 16));
+        //TODO remove test value
+        songName.setText("По проводам");
         this.getChildren().add(songName);
 
         artistName = new Text();
@@ -116,6 +125,30 @@ public class Control extends Pane {
         artistName.setY(39 + fixY);
         artistName.setFill(Color.WHITE);
         artistName.setFont(FontManager.loadFont(Fonts.SEGOE_UI_BOLD.getFontName(), 13));
+        //TODO remove test value
+        artistName.setText("ChipaChip");
         this.getChildren().add(artistName);
+    }
+
+    /**
+     * Init song buttons
+     */
+    private void initSongButtons() {
+        final double middleX = this.layout.getPrefWidth() / 2;
+
+        previousButton = new ControlButton(middleX - 30 - ControlButton.getSize(), 13, Pictures.PREV_ICON);
+        this.getChildren().add(previousButton);
+
+        nextButton = new ControlButton(middleX + 30, 13, Pictures.NEXT_ICON);
+        this.getChildren().add(nextButton);
+
+        repeatButton = new ControlButton(573, height / 2 - ControlButton.getSize() / 2, Pictures.REPEAT_ICON);
+        this.getChildren().add(repeatButton);
+
+        randomButton = new ControlButton(573 + ControlButton.getSize() + 12, height / 2 - ControlButton.getSize() / 2, Pictures.RANDOM_ICON);
+        this.getChildren().add(randomButton);
+
+        muteButton = new ControlButton(573 + ControlButton.getSize() * 2 + 12 * 2, height / 2 - ControlButton.getSize() / 2, Pictures.VOLUME_ICON);
+        this.getChildren().add(muteButton);
     }
 }

@@ -1,5 +1,6 @@
 package relevant_craft.vento.media_player.gui.main.elements;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.MouseEvent;
@@ -77,6 +78,9 @@ public class Title extends Pane {
                 Pictures.CLOSE_ICON,
                 Colors.CLOSE_COLOR_GLOW.getColor());
         this.getChildren().add(close);
+
+        //TODO remove
+        close.addClickListener(Platform::exit);
     }
 
     /**

@@ -5,6 +5,7 @@ public enum Pictures {
     CLOSE_ICON("close_icon.png"),
     LOGO("logo.png"),
     PLAY_ICON("play_icon.png"),
+    PAUSE_ICON("pause_icon.png"),
     PREV_ICON("prev_icon.png"),
     NEXT_ICON("next_icon.png"),
     REPEAT_ICON("repeat_icon.png"),

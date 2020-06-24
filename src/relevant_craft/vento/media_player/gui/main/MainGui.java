@@ -5,10 +5,10 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import relevant_craft.vento.media_player.gui.main.elements.Control;
-import relevant_craft.vento.media_player.gui.main.elements.Navigation;
-import relevant_craft.vento.media_player.gui.main.elements.Title;
-import relevant_craft.vento.media_player.gui.main.elements.Visualization;
+import relevant_craft.vento.media_player.gui.main.elements.control.Control;
+import relevant_craft.vento.media_player.gui.main.elements.navigation.Navigation;
+import relevant_craft.vento.media_player.gui.main.elements.title.Title;
+import relevant_craft.vento.media_player.gui.main.elements.visualization.Visualization;
 import relevant_craft.vento.media_player.manager.color.Colors;
 
 public class MainGui extends Pane {
@@ -18,7 +18,7 @@ public class MainGui extends Pane {
     private static MainGui instance;
 
     private final Stage stage;
-    private AnchorPane layout;
+    private final AnchorPane layout;
     private final Title title;
     private final Control control;
     private final Navigation navigation;
@@ -31,15 +31,16 @@ public class MainGui extends Pane {
         //create region
         super();
         this.setPrefSize(WIDTH + 20, HEIGHT + 20);
+        this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
 
         instance = this;
         this.stage = primaryStage;
 
         //init main gui
-        this.initLayout();
+        this.layout = initLayout();
         this.title = new Title(layout, stage);
         this.control = new Control(layout);
-        this.navigation = new Navigation(layout, title, control);
+        this.navigation = new Navigation(stage, layout, title, control);
         this.visualization = new Visualization(layout, title, navigation);
 
         this.getChildren().setAll(layout);
@@ -48,14 +49,16 @@ public class MainGui extends Pane {
     /**
      * Init main window layout
      */
-    private void initLayout() {
-        layout = new AnchorPane();
+    private AnchorPane initLayout() {
+        AnchorPane layout = new AnchorPane();
         layout.setPrefWidth(WIDTH);
         layout.setPrefHeight(HEIGHT);
         layout.setBackground(new Background(new BackgroundFill(Colors.LAYOUT_COLOR.getColor(), new CornerRadii(5), Insets.EMPTY)));
         layout.setEffect(new DropShadow(10, Color.web(Color.BLACK.toString(), 0.75)));
         layout.setLayoutX(this.getPrefWidth() / 2 - layout.getPrefWidth() / 2);
         layout.setLayoutY(this.getPrefHeight() / 2 - layout.getPrefHeight() / 2);
+
+        return layout;
     }
 
     /**

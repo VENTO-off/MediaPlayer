@@ -4,13 +4,12 @@ import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
-import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import relevant_craft.vento.media_player.gui.main.elements.control.Control;
 import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.manager.color.Colors;
+import relevant_craft.vento.media_player.manager.picture.Pictures;
 
 public class Navigation extends ScrollPane {
     private final Stage stage;
@@ -57,18 +56,19 @@ public class Navigation extends ScrollPane {
         });
 
         //TODO manage content
-        content = new Pane();
-        content.setPrefWidth(100);
-        int y = 10;
-        for (int i = 0; i <= 125; i++) {
-            Text t = new Text("text " + i);
-            t.setLayoutX(10);
-            t.setLayoutY(y);
-            y += 10;
-            content.getChildren().add(t);
-        }
-        content.setPrefHeight(y);
-        content.setBackground(new Background(new BackgroundFill(Paint.valueOf("#ff0000"), CornerRadii.EMPTY, Insets.EMPTY)));
+        content = new VBox();
+        content.setPrefWidth(this.getPrefWidth());
+
+        NavigationList playlists = new NavigationList("ПЛЕЙЛИСТЫ");
+        content.getChildren().add(playlists);
+        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #1"));
+        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #2"));
+        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #3"));
+        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #4"));
+        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #5"));
+
+        content.setPrefHeight(playlists.calculateHeight());
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
 
         this.setContent(content);
     }

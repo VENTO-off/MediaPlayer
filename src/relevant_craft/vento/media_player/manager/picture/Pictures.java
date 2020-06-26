@@ -12,6 +12,7 @@ public enum Pictures {
     RANDOM_ICON("random_icon.png"),
     VOLUME_ICON("volume_icon.png"),
     MUTE_ICON("mute_icon.png"),
+    PLAYLIST_ICON("playlist_icon.png"),
     TEST_COVER("test_cover.png"),
     ;
 

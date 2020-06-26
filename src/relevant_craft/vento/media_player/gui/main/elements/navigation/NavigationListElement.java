@@ -53,6 +53,7 @@ public class NavigationListElement extends Pane {
         this.setOnDragDetected(this::onDragDetected);
         this.setOnDragOver(this::onDragOver);
         this.setOnDragDropped(this::onDragDropped);
+        this.setOnDragDone(this::onDragDone);
         this.setOnMouseClicked(this::onClick);
     }
 
@@ -193,6 +194,20 @@ public class NavigationListElement extends Pane {
         }
 
         e.setDropCompleted(isSuccess);
+    }
+
+    /**
+     * Event on drag done
+     */
+    private void onDragDone(DragEvent e) {
+        Dragboard dragboard = e.getDragboard();
+
+        if (e.getAcceptedTransferMode() == null) {
+            if (dragboard.hasContent(ITEM_LIST)) {
+                clearBlank();
+                list.setOrder((NavigationItem) dragboard.getContent(ITEM_LIST));
+            }
+        }
     }
 
     /**

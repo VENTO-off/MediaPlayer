@@ -81,7 +81,7 @@ public class Control extends Pane {
      * Init song slider
      */
     private void initSongSlider() {
-        songSlider = new ControlSlider(267, 48, 265, this, true);
+        songSlider = new ControlSlider(267, 52, 265, this, true);
         this.getChildren().add(songSlider);
     }
 

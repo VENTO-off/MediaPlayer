@@ -48,9 +48,9 @@ public class NavigationScrollBar extends ScrollBar {
         this.setOrientation(Orientation.VERTICAL);
 
         //position
-        this.layoutX = navigation.getPrefWidth() - defaultWidth - 2;
+        this.layoutX = this.navigation.getPrefWidth() - defaultWidth - 2;
         this.setLayoutX(layoutX);
-        this.setLayoutY(navigation.getLayoutY());
+        this.setLayoutY(this.navigation.getLayoutY());
 
         //transparent background
         this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -70,7 +70,7 @@ public class NavigationScrollBar extends ScrollBar {
         this.valueProperty().addListener((observable, oldValue, newValue) -> navigation.setVvalue(newValue.doubleValue()));
         navigation.vvalueProperty().addListener((observable, oldValue, newValue) -> this.setValue(newValue.doubleValue()));
 
-        stage.addEventFilter(WindowEvent.WINDOW_SHOWN, event -> {
+        this.stage.addEventFilter(WindowEvent.WINDOW_SHOWN, event -> {
             //track
             Region track = (Region) this.lookup(".track");
             track.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -189,7 +189,6 @@ public class NavigationScrollBar extends ScrollBar {
      */
     private void onPressed(MouseEvent e) {
         isPressed = true;
-
     }
 
     /**

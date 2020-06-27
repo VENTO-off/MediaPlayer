@@ -49,7 +49,7 @@ public class Navigation extends ScrollPane {
         this.setVmax(100);
         this.setMaxHeight(this.getPrefHeight());
         this.setBackground(new Background(new BackgroundFill(Colors.NAVIGATION_COLOR.getColor(), CornerRadii.EMPTY, Insets.EMPTY)));
-        stage.addEventFilter(WindowEvent.WINDOW_SHOWN, event -> {
+        this.stage.addEventFilter(WindowEvent.WINDOW_SHOWN, event -> {
             //viewport
             Region viewport = (Pane) this.lookup(".viewport");
             viewport.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -67,7 +67,7 @@ public class Navigation extends ScrollPane {
         playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #4"));
         playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #5"));
 
-        content.setPrefHeight(playlists.calculateHeight());
+        content.setPrefHeight(playlists.calculateHeight() + 20);
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
 
         this.setContent(content);

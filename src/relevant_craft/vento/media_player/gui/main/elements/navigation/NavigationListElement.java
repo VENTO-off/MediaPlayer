@@ -61,7 +61,7 @@ public class NavigationListElement extends Pane {
      * Init style
      */
     private void initStyle() {
-        //style
+        //init layout
         this.setPrefWidth(154);
         this.setPrefHeight(35);
         this.setPadding(new Insets(2.0, 0, 2.0, 0));
@@ -214,6 +214,7 @@ public class NavigationListElement extends Pane {
      * Event on mouse click
      */
     private void onClick(MouseEvent e) {
+        list.onClick();
         setSelected(!isSelected);
     }
 

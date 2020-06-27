@@ -13,6 +13,7 @@ public enum Pictures {
     VOLUME_ICON("volume_icon.png"),
     MUTE_ICON("mute_icon.png"),
     PLAYLIST_ICON("playlist_icon.png"),
+    VU_METER("vu_meter.png"),
     TEST_COVER("test_cover.png"),
     ;
 

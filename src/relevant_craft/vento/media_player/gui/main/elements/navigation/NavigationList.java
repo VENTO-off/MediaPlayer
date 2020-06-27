@@ -95,4 +95,16 @@ public class NavigationList extends VBox {
 
         return height;
     }
+
+    /**
+     * Event on mouse click
+     */
+    public void onClick() {
+        for (Node node : this.getChildren()) {
+            if (node instanceof NavigationListElement) {
+                NavigationListElement element = (NavigationListElement) node;
+                element.setSelected(false);
+            }
+        }
+    }
 }

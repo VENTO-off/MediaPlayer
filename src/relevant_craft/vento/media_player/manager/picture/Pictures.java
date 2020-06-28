@@ -14,6 +14,8 @@ public enum Pictures {
     MUTE_ICON("mute_icon.png"),
     PLAYLIST_ICON("playlist_icon.png"),
     VU_METER("vu_meter.png"),
+    SEARCH_ICON("search_icon.png"),
+    CLEAR_ICON("clear_icon.png"),
     TEST_COVER("test_cover.png"),
     ;
 

@@ -11,6 +11,7 @@ public enum Colors {
     MIDDLE_COLOR_TITLE_BUTTON("#303030"),
     BORDER_COLOR_TITLE_BUTTON("#232323"),
     SLIDER_TOTAL_COLOR("#626365"),
+    SEARCH_COLOR("#202020"),
     ;
 
     private final Color color;

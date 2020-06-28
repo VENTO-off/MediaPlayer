@@ -185,7 +185,7 @@ public class NavigationScrollBar extends ScrollBar {
     }
 
     /**
-     * Event on mouse pressed
+     * Event on mouse pressedцц
      */
     private void onPressed(MouseEvent e) {
         isPressed = true;

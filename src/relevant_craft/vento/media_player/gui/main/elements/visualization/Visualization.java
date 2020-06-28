@@ -18,6 +18,8 @@ public class Visualization extends Pane {
     private VUMeter vuLeft;
     private VUMeter vuRight;
     private Equalizer equalizer;
+    private PlaylistInfo playlistInfo;
+    private PlaylistSearch playlistSearch;
 
     /**
      * Init visualization bar
@@ -32,6 +34,8 @@ public class Visualization extends Pane {
         this.initVisualization();
         this.initVUMeters();
         this.initEqualizer();
+        this.initPlaylistInfo();
+        this.initPlaylistSearch();
 
         layout.getChildren().add(0, this);
     }
@@ -58,7 +62,7 @@ public class Visualization extends Pane {
     }
 
     /**
-     * Init VU Meters
+     * Init VU meters
      */
     private void initVUMeters() {
         vuLeft = new VUMeter(9, getVisualizationHeight() / 2 - VUMeter.getVUHeight() / 2);
@@ -72,11 +76,35 @@ public class Visualization extends Pane {
     }
 
     /**
-     * Init Equalizer
+     * Init equalizer
      */
     private void initEqualizer() {
         equalizer = new Equalizer(this.getPrefWidth() - Equalizer.getEqualizerWidth() - 9, getVisualizationHeight() / 2 - Equalizer.getEqualizerHeight() / 2);
         this.getChildren().add(equalizer);
+    }
+
+    /**
+     * Init playlist info
+     */
+    private void initPlaylistInfo() {
+        final double fixY = 11;
+
+        playlistInfo = new PlaylistInfo(11, separator.getStartY() + fixY + 8);
+        this.getChildren().add(playlistInfo);
+        //TODO remove test value
+        playlistInfo.setPlaylistInfo("Playlist #1", 19, 3376, 135266304);
+    }
+
+    /**
+     * Init playlist search
+     */
+    private void initPlaylistSearch() {
+        playlistSearch = new PlaylistSearch(this.getPrefWidth() - PlaylistSearch.getPlaylistSearchWidth() - 9,
+                separator.getStartY() +
+                        (this.getPrefHeight() - separator.getStartY()) / 2 -
+                        PlaylistSearch.getPlaylistSearchHeight() / 2 +
+                        separator.getStrokeWidth() / 2);
+        this.getChildren().add(playlistSearch);
     }
 
     /**

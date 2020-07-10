@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import relevant_craft.vento.media_player.gui.main.elements.control.Control;
+import relevant_craft.vento.media_player.gui.main.elements.scrollbar.ContentScrollBar;
 import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.manager.color.Colors;
 import relevant_craft.vento.media_player.manager.picture.Pictures;
@@ -16,7 +17,7 @@ public class Navigation extends ScrollPane {
     private final AnchorPane layout;
     private final Title title;
     private final Control control;
-    private final NavigationScrollBar scrollBar;
+    private final ContentScrollBar scrollBar;
 
     private Pane content;
 
@@ -58,9 +59,9 @@ public class Navigation extends ScrollPane {
         //TODO manage content
         content = new VBox();
         content.setPrefWidth(this.getPrefWidth());
+        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
 
         NavigationList playlists = new NavigationList("ПЛЕЙЛИСТЫ");
-        content.getChildren().add(playlists);
         playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #1"));
         playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #2"));
         playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #3"));
@@ -68,7 +69,7 @@ public class Navigation extends ScrollPane {
         playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #5"));
 
         content.setPrefHeight(playlists.calculateHeight() + 20);
-        content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
+        content.getChildren().add(playlists);
 
         this.setContent(content);
     }
@@ -76,8 +77,8 @@ public class Navigation extends ScrollPane {
     /**
      * Init scroll bar
      */
-    private NavigationScrollBar initScrollbar() {
-        NavigationScrollBar scrollBar = new NavigationScrollBar(stage, this);
+    private ContentScrollBar initScrollbar() {
+        ContentScrollBar scrollBar = new ContentScrollBar(stage, this);
         scrollBar.setThumbHeight(content.getPrefHeight());
         layout.getChildren().add(scrollBar);
 

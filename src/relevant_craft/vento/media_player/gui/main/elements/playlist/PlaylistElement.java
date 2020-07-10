@@ -1,11 +1,9 @@
-package relevant_craft.vento.media_player.gui.main.elements.navigation;
+package relevant_craft.vento.media_player.gui.main.elements.playlist;
 
 import javafx.application.Platform;
-import javafx.geometry.Insets;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.*;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -16,37 +14,39 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
-import relevant_craft.vento.media_player.manager.picture.PictureManager;
+import relevant_craft.vento.media_player.utils.SizeUtils;
+import relevant_craft.vento.media_player.utils.TimeUtils;
 
-public class NavigationListElement extends Pane {
-    private static final DataFormat ITEM_LIST = new DataFormat("navigation/item");
+public class PlaylistElement extends Pane {
+    private static final DataFormat ITEM_LIST = new DataFormat("playlist/item");
     private static final CornerRadii CORNER_RADII = new CornerRadii(3.0, 0, 0, 3.0, false);
     private static int lastID = 0;
 
     private final int id;
-    private final NavigationList list;
-    private final NavigationItem data;
-    private final ImageView image;
+    private final PlaylistList list;
+    private final PlaylistItem data;
     private final Text text;
+    private final Text subText;
+    private final Text time;
 
     private boolean isSelected;
     private long lastUpdate;
 
     /**
-     * Init navigation list element
+     * Init playlist element
      */
-    public NavigationListElement(NavigationList list, NavigationItem data) {
+    public PlaylistElement(PlaylistList list, PlaylistItem data) {
         super();
 
         this.id = lastID++;
         this.list = list;
         this.data = data;
-        this.image = new ImageView();
         this.text = new Text();
-        this.isSelected = false;
-        this.lastUpdate = System.currentTimeMillis();
+        this.subText = new Text();
+        this.time = new Text();
 
         this.initStyle();
 
@@ -62,9 +62,7 @@ public class NavigationListElement extends Pane {
      */
     private void initStyle() {
         //init layout
-        this.setPrefWidth(154);
-        this.setPrefHeight(35);
-        this.setPadding(new Insets(2.0, 0, 2.0, 0));
+        this.setPrefHeight(38);
         this.setCursor(Cursor.HAND);
         this.setSelected(isSelected);
 
@@ -72,21 +70,35 @@ public class NavigationListElement extends Pane {
             return;
         }
 
-        //render image
-        this.image.setImage(PictureManager.loadImage(data.getIcon().getIconName()));
-        this.image.setLayoutX(8);
-        this.image.setLayoutY(this.getPrefHeight() / 2 - this.image.getImage().getHeight() / 2);
-        this.getChildren().add(this.image);
-
-        //render text
+        //render song name
         final double fixY = 11;
         this.text.setText(data.getDisplayName());
         this.text.setFill(Color.WHITE);
-        this.text.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 17));
-        this.text.setLayoutX(30);
-        this.text.setLayoutY(fixY + 12);
+        this.text.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 15));
+        this.text.setLayoutX(10);
+        this.text.setLayoutY(fixY + 7);
         this.text.setDisable(true);
         this.getChildren().add(this.text);
+
+        //render song info
+        this.subText.setText(String.join(" :: ", data.getAudioFormat(), String.join(", ", data.getSamplingRate() + " kHz", + data.getBitRate() + " kbps", SizeUtils.formatSize(data.getSize()))));
+        this.subText.setFill(Color.web(Color.WHITE.toString(), 0.25));
+        this.subText.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 11));
+        this.subText.setLayoutX(30);
+        this.subText.setLayoutY(fixY + 22);
+        this.subText.setDisable(true);
+        this.getChildren().add(this.subText);
+
+        //render song time
+        this.time.setText(TimeUtils.formatPlaylistTime(data.getTime()));
+        this.time.setWrappingWidth(60);
+        this.time.setTextAlignment(TextAlignment.RIGHT);
+        this.time.setFill(Color.WHITE);
+        this.time.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 14));
+        this.time.setLayoutX(543);
+        this.time.setLayoutY(this.text.getLayoutY());
+        this.time.setDisable(true);
+        this.getChildren().add(this.time);
     }
 
     /**
@@ -95,14 +107,14 @@ public class NavigationListElement extends Pane {
     private int getIndex(DragEvent e) {
         int index = 0;
 
-        NavigationListElement target = (NavigationListElement) e.getTarget();
+        PlaylistElement target = (PlaylistElement) e.getTarget();
         if (target.isBlank() && e.getY() < this.getPrefHeight()) {
             return list.getLastDragId();
         }
 
         for (Node node : list.getChildren()) {
-            if (node instanceof NavigationListElement) {
-                NavigationListElement element = (NavigationListElement) node;
+            if (node instanceof PlaylistElement) {
+                PlaylistElement element = (PlaylistElement) node;
                 if (element.equals(target)) {
                     break;
                 }
@@ -136,7 +148,7 @@ public class NavigationListElement extends Pane {
         clearBlank();
 
         //add new blank element
-        Platform.runLater(() -> list.getChildren().add(index, new NavigationListElement(list, null)));
+        Platform.runLater(() -> list.getChildren().add(index, new PlaylistElement(list, null)));
 
         list.setLastDragId(index);
     }
@@ -146,8 +158,8 @@ public class NavigationListElement extends Pane {
      */
     private void clearBlank() {
         for (Node node : list.getChildren()) {
-            if (node instanceof NavigationListElement) {
-                NavigationListElement element = (NavigationListElement) node;
+            if (node instanceof PlaylistElement) {
+                PlaylistElement element = (PlaylistElement) node;
                 if (element.isBlank()) {
                     Platform.runLater(() -> list.getChildren().remove(node));
                 }
@@ -201,7 +213,7 @@ public class NavigationListElement extends Pane {
 
         if (dragboard.hasContent(ITEM_LIST)) {
             clearBlank();
-            list.setOrder((NavigationItem) dragboard.getContent(ITEM_LIST));
+            list.setOrder((PlaylistItem) dragboard.getContent(ITEM_LIST));
             isSuccess = true;
         }
 
@@ -217,7 +229,7 @@ public class NavigationListElement extends Pane {
         if (e.getAcceptedTransferMode() == null) {
             if (dragboard.hasContent(ITEM_LIST)) {
                 clearBlank();
-                list.setOrder((NavigationItem) dragboard.getContent(ITEM_LIST));
+                list.setOrder((PlaylistItem) dragboard.getContent(ITEM_LIST));
             }
         }
     }
@@ -233,7 +245,7 @@ public class NavigationListElement extends Pane {
     /**
      * Get item data
      */
-    public NavigationItem getData() {
+    public PlaylistItem getData() {
         return data;
     }
 
@@ -268,7 +280,7 @@ public class NavigationListElement extends Pane {
                     0,
                     true,
                     CycleMethod.NO_CYCLE,
-                    new Stop(0, Color.web(averageColor)),
+                    new Stop(0, Color.web(averageColor, 0.5)),
                     new Stop(1, Color.TRANSPARENT)
             );
             this.setBackground(new Background(new BackgroundFill(gradient, CORNER_RADII, this.getPadding())));
@@ -284,7 +296,7 @@ public class NavigationListElement extends Pane {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        NavigationListElement element = (NavigationListElement) o;
+        PlaylistElement element = (PlaylistElement) o;
         return id == element.id;
     }
 }

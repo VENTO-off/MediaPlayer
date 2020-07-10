@@ -4,7 +4,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
-import relevant_craft.vento.media_player.utils.FormatUtils;
+import relevant_craft.vento.media_player.utils.SizeUtils;
+import relevant_craft.vento.media_player.utils.TimeUtils;
 
 public class PlaylistInfo extends Text {
 
@@ -25,6 +26,6 @@ public class PlaylistInfo extends Text {
      * Set playlist info
      */
     public void setPlaylistInfo(String name, int songs, long time, long size) {
-        this.setText(String.join(" / ", name, String.valueOf(songs), FormatUtils.formatTime(time), FormatUtils.formatSize(size)));
+        this.setText(String.join(" / ", name, String.valueOf(songs), TimeUtils.formatPlaylistInfoTime(time), SizeUtils.formatSize(size)));
     }
 }

@@ -1,4 +1,4 @@
-package relevant_craft.vento.media_player.gui.main.elements.navigation;
+package relevant_craft.vento.media_player.gui.main.elements.scrollbar;
 
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
@@ -8,6 +8,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.control.ScrollBar;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -18,15 +19,15 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Duration;
 
-public class NavigationScrollBar extends ScrollBar {
+public class ContentScrollBar extends ScrollBar {
     private final double defaultWidth = 3;
-    private final double defaultOpacity = 0.2;
+    private final double defaultOpacity = 0.3;
     private final double hoverWidth = 7;
-    private final double hoverOpacity = 0.4;
+    private final double hoverOpacity = 0.6;
     private final Duration animationTime = Duration.millis(200);
     private final Duration animationDelay = Duration.millis(500);
     private final double layoutX;
-    private final Navigation navigation;
+    private final ScrollPane parent;
     private final Stage stage;
 
     private Timeline positionAnimation;
@@ -38,19 +39,19 @@ public class NavigationScrollBar extends ScrollBar {
     /**
      * Init scroll bar
      */
-    public NavigationScrollBar(Stage stage, Navigation navigation) {
+    public ContentScrollBar(Stage stage, ScrollPane parent) {
         super();
 
         this.stage = stage;
-        this.navigation = navigation;
+        this.parent = parent;
 
         //orientation
         this.setOrientation(Orientation.VERTICAL);
 
         //position
-        this.layoutX = this.navigation.getPrefWidth() - defaultWidth - 2;
+        this.layoutX = this.parent.getLayoutX() + this.parent.getPrefWidth() - defaultWidth - 2;
         this.setLayoutX(layoutX);
-        this.setLayoutY(this.navigation.getLayoutY());
+        this.setLayoutY(this.parent.getLayoutY());
 
         //transparent background
         this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -61,14 +62,14 @@ public class NavigationScrollBar extends ScrollBar {
         this.setMinWidth(defaultWidth);
 
         //height
-        this.setPrefHeight(navigation.getPrefHeight());
+        this.setPrefHeight(this.parent.getPrefHeight());
 
         //opacity by default
         this.setOpacity(defaultOpacity);
 
         //on scroll event
-        this.valueProperty().addListener((observable, oldValue, newValue) -> navigation.setVvalue(newValue.doubleValue()));
-        navigation.vvalueProperty().addListener((observable, oldValue, newValue) -> this.setValue(newValue.doubleValue()));
+        this.valueProperty().addListener((observable, oldValue, newValue) -> this.parent.setVvalue(newValue.doubleValue()));
+        this.parent.vvalueProperty().addListener((observable, oldValue, newValue) -> this.setValue(newValue.doubleValue()));
 
         this.stage.addEventFilter(WindowEvent.WINDOW_SHOWN, event -> {
             //track
@@ -82,7 +83,7 @@ public class NavigationScrollBar extends ScrollBar {
             //thumb
             Region thumb = (Region) this.lookup(".thumb");
             thumb.setBackground(new Background(new BackgroundFill(Color.WHITE, new CornerRadii(5), new Insets(1.0, 0.0, 1.0, 0.0))));
-            thumb.setOpacity(0.2);
+            thumb.setOpacity(defaultOpacity);
             thumb.setOnMouseEntered(this::onHover);
             thumb.setOnMouseExited(this::onExit);
             thumb.setOnMousePressed(this::onPressed);

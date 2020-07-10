@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import relevant_craft.vento.media_player.gui.main.elements.control.Control;
 import relevant_craft.vento.media_player.gui.main.elements.navigation.Navigation;
+import relevant_craft.vento.media_player.gui.main.elements.playlist.Playlist;
 import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.gui.main.elements.visualization.Visualization;
 import relevant_craft.vento.media_player.manager.color.Colors;
@@ -23,6 +24,7 @@ public class MainGui extends Pane {
     private final Control control;
     private final Navigation navigation;
     private final Visualization visualization;
+    private final Playlist playlist;
 
     /**
      * Init main window
@@ -42,6 +44,7 @@ public class MainGui extends Pane {
         this.control = new Control(layout);
         this.navigation = new Navigation(stage, layout, title, control);
         this.visualization = new Visualization(layout, title, navigation);
+        this.playlist = new Playlist(stage, layout, title, control, navigation, visualization);
 
         this.getChildren().setAll(layout);
     }

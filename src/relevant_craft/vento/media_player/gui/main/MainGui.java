@@ -77,4 +77,39 @@ public class MainGui extends Pane {
     public AnchorPane getLayout() {
         return layout;
     }
+
+    /**
+     * Return title bar
+     */
+    public Title getTitle() {
+        return title;
+    }
+
+    /**
+     * Return control bar
+     */
+    public Control getControl() {
+        return control;
+    }
+
+    /**
+     * Return navigation bar
+     */
+    public Navigation getNavigation() {
+        return navigation;
+    }
+
+    /**
+     * Return visualization bar
+     */
+    public Visualization getVisualization() {
+        return visualization;
+    }
+
+    /**
+     * Return playlist bar
+     */
+    public Playlist getPlaylist() {
+        return playlist;
+    }
 }

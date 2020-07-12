@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import relevant_craft.vento.media_player.gui.main.MainGui;
+import relevant_craft.vento.media_player.manager.player.PlayerManager;
 
 public class VENTO extends Application {
 
@@ -21,6 +22,8 @@ public class VENTO extends Application {
         stage.setScene(new Scene(mainGui));
         stage.getScene().setFill(Color.TRANSPARENT);
         stage.show();
+
+        PlayerManager playerManager = new PlayerManager();
     }
 
     public static void main(String[] args) {

@@ -169,4 +169,81 @@ public class Control extends Pane {
                 Pictures.MUTE_ICON);
         this.getChildren().add(muteButton);
     }
+
+    /**
+     * Return song slider
+     */
+    public ControlSlider getSongSlider() {
+        return songSlider;
+    }
+
+    /**
+     * Return volume slider
+     */
+    public ControlSlider getVolumeSlider() {
+        return volumeSlider;
+    }
+
+    /**
+     * Return cover (playlist background)
+     */
+    public ImageView getCover() {
+        return cover;
+    }
+
+    /**
+     * Return song name
+     */
+    public Text getSongName() {
+        return songName;
+    }
+
+    /**
+     * Return artist name
+     */
+    public Text getArtistName() {
+        return artistName;
+    }
+
+    /**
+     * Return play/pause button
+     */
+    public BigChangeableControlButton getPlayButton() {
+        return playButton;
+    }
+
+    /**
+     * Return previous button
+     */
+    public ControlButton getPreviousButton() {
+        return previousButton;
+    }
+
+    /**
+     * Return next button
+     */
+    public ControlButton getNextButton() {
+        return nextButton;
+    }
+
+    /**
+     * Return repeat button
+     */
+    public PressableControlButton getRepeatButton() {
+        return repeatButton;
+    }
+
+    /**
+     * Return random button
+     */
+    public PressableControlButton getRandomButton() {
+        return randomButton;
+    }
+
+    /**
+     * Return mute button
+     */
+    public ChangeableControlButton getMuteButton() {
+        return muteButton;
+    }
 }

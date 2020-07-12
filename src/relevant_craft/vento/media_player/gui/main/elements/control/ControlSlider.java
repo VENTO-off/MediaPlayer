@@ -17,6 +17,7 @@ import javafx.util.Duration;
 import relevant_craft.vento.media_player.manager.color.Colors;
 import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
+import relevant_craft.vento.media_player.utils.TimeUtils;
 
 public class ControlSlider extends Pane {
     private static final double height = 3;
@@ -30,8 +31,10 @@ public class ControlSlider extends Pane {
     private final Text currentValue;
     private final Text totalValue;
 
+    private boolean isPressed;
     private Timeline buttonAnimation;
     private Timeline progressAnimation;
+    private ClickListener clickListener;
 
     /**
      * Init slider for control bar
@@ -44,6 +47,7 @@ public class ControlSlider extends Pane {
         this.setPrefHeight(radius);
         this.setOnMouseClicked(this::onClick);
         this.control = control;
+        this.isPressed = false;
 
         //init total progress
         progressTotal = new Rectangle(width, height);
@@ -68,6 +72,7 @@ public class ControlSlider extends Pane {
         progressButton.setEffect(new DropShadow(7, Color.web(Color.BLACK.toString(), 0.5)));
         progressButton.setCursor(Cursor.HAND);
         progressButton.setOnMouseDragged(this::onDrag);
+        progressButton.setOnMouseReleased(this::onMouseReleased);
         this.getChildren().add(progressButton);
 
         if (displayValues) {
@@ -81,8 +86,6 @@ public class ControlSlider extends Pane {
             currentValue.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 12));
             currentValue.setWrappingWidth(valueWidth);
             currentValue.setTextAlignment(TextAlignment.RIGHT);
-            //TODO remove test value
-            currentValue.setText("0:55");
             control.getChildren().add(currentValue);
 
             //init total value
@@ -92,13 +95,76 @@ public class ControlSlider extends Pane {
             totalValue.setFill(Color.WHITE);
             totalValue.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 12));
             totalValue.setWrappingWidth(valueWidth);
-            //TODO remove test value
-            totalValue.setText("3:32");
             control.getChildren().add(totalValue);
         } else {
             currentValue = null;
             totalValue = null;
         }
+    }
+
+    /**
+     * Click listener
+     */
+    public interface ClickListener {
+        void onClick(double progress);
+    }
+
+    /**
+     * Add click listener
+     */
+    public void addClickListener(ClickListener clickListener) {
+        this.clickListener = clickListener;
+    }
+
+    /**
+     * Get slider percentage
+     */
+    private double getProgress(MouseEvent e) {
+        double min = radius;
+        double max = this.getPrefWidth() - radius;
+
+        double percentage = (e.getX() - min) / (max - min);
+        if (percentage < 0.0) {
+            percentage = 0.0;
+        } else if (percentage > 1.0) {
+            percentage = 1.0;
+        }
+
+        return percentage;
+    }
+
+    /**
+     * Set slider percentage
+     */
+    public void setProgress(double percentage) {
+        if (isPressed) {
+            return;
+        }
+
+        if (percentage < 0) {
+            percentage = 0;
+        } else if (percentage > 1) {
+            percentage = 1;
+        }
+
+        double x = radius + ((int) (percentage * 100)) * (this.getPrefWidth() - radius * 2) / 100;
+
+        progressButton.setCenterX(x);
+        progressCurrent.setWidth(x);
+    }
+
+    /**
+     * Set current value
+     */
+    public void setCurrentValue(long seconds) {
+        currentValue.setText(TimeUtils.formatPlaylistTime(seconds));
+    }
+
+    /**
+     * Set total value
+     */
+    public void setTotalValue(long seconds) {
+        totalValue.setText(TimeUtils.formatPlaylistTime(seconds));
     }
 
     /**
@@ -123,6 +189,11 @@ public class ControlSlider extends Pane {
         if (progressAnimation != null && progressAnimation.getStatus() == Animation.Status.RUNNING) progressAnimation.stop();
         progressAnimation = new Timeline(new KeyFrame(Duration.millis(50), new KeyValue(progressCurrent.widthProperty(), x)));
         progressAnimation.play();
+
+        //notify listener on click
+        if (clickListener != null) {
+            clickListener.onClick(getProgress(e));
+        }
     }
 
     /**
@@ -133,6 +204,8 @@ public class ControlSlider extends Pane {
             return;
         }
 
+        isPressed = true;
+
         double x = e.getX();
         if (e.getX() < radius) {
             x = radius;
@@ -142,6 +215,21 @@ public class ControlSlider extends Pane {
 
         progressButton.setCenterX(x);
         progressCurrent.setWidth(x);
+    }
+
+    /**
+     * Notify listener on mouse release after drag
+     */
+    private void onMouseReleased(MouseEvent e) {
+        double progress = this.getProgress(e);
+
+        if (clickListener != null) {
+            clickListener.onClick(progress);
+        }
+
+        setProgress(progress);
+
+        isPressed = false;
     }
 
     /**

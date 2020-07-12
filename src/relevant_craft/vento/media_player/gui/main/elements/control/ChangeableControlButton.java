@@ -17,21 +17,35 @@ public class ChangeableControlButton extends ControlButton {
         super(positionX, positionY, icon1);
         this.icon_default = icon1;
         this.icon_click = icon2;
+        this.isSelected = false;
     }
 
     /**
      * Change icon on click
      */
     protected void onClick(MouseEvent e) {
+        this.setValue(!this.isSelected);
+        super.onClick(e);
+    }
+
+    /**
+     * Set selected
+     */
+    public void setSelected(boolean isSelected) {
+        this.setValue(isSelected);
+    }
+
+    /**
+     * Set button value
+     */
+    private void setValue(boolean isSelected) {
         if (isSelected) {
-            image.setImage(PictureManager.loadImage(icon_default.getIconName()));
-        } else {
             image.setImage(PictureManager.loadImage(icon_click.getIconName()));
+        } else {
+            image.setImage(PictureManager.loadImage(icon_default.getIconName()));
         }
 
-        isSelected = !isSelected;
-
-        super.onClick(e);
+        this.isSelected = isSelected;
     }
 
     /**

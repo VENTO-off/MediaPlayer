@@ -19,6 +19,7 @@ public class PlayerEngine implements Runnable {
     private final Control control;
 
     private AudioInputStream in;
+    private FloatControl volume;
     long frameSize;
     float sampleRate;
     long readFrames;
@@ -62,11 +63,19 @@ public class PlayerEngine implements Runnable {
             AudioFormat format = this.getOutFormat(in.getFormat());
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
 
+            //prepare line
             try (SourceDataLine line = (SourceDataLine) AudioSystem.getLine(info)) {
                 if (line != null) {
                     line.open(format, BUFFER_SIZE);
                     line.start();
+
+                    //volume
+                    volume = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
+                    this.setVolume(control.getVolumeSlider().getProgress());
+
+                    //stream audio
                     this.stream(AudioSystem.getAudioInputStream(format, in), line);
+
                     line.drain();
                     line.stop();
                 }
@@ -81,7 +90,8 @@ public class PlayerEngine implements Runnable {
         } finally {
             try {
                 in.close();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -98,21 +108,22 @@ public class PlayerEngine implements Runnable {
             player = new Thread(this);
             player.setPriority(Thread.MAX_PRIORITY);
             player.start();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     /**
      * Pause/resume audio
      */
-    public void pause() {
-        isPaused = !isPaused;
+    public void pause(boolean value) {
+        isPaused = value;
     }
 
     /**
      * Mute audio
      */
-    public void mute() {
-        isMuted = !isMuted;
+    public void setMuted(boolean value) {
+        isMuted = value;
     }
 
     /**
@@ -129,7 +140,15 @@ public class PlayerEngine implements Runnable {
 
             //start player
             play();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * Set volume
+     */
+    public void setVolume(double percentage) {
+        volume.setValue(20.0f * (float) Math.log10(percentage));
     }
 
     /**
@@ -272,7 +291,8 @@ public class PlayerEngine implements Runnable {
     private void sleep(long millis) {
         try {
             Thread.sleep(millis);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     /**

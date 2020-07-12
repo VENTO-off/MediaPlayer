@@ -18,7 +18,11 @@ public class PlayerManager {
     private final Playlist playlist;
 
     private PlayerEngine playerEngine;
+    private double volumeLevel;
 
+    /**
+     * Init player manager
+     */
     public PlayerManager() {
         this.mainGui = MainGui.getInstance();
         this.title = mainGui.getTitle();
@@ -27,32 +31,66 @@ public class PlayerManager {
         this.visualization = mainGui.getVisualization();
         this.playlist = mainGui.getPlaylist();
 
-        control.getPlayButton().addClickListener(() -> {
-            if (playerEngine != null) {
-                playerEngine.pause();
-                return;
-            }
-            playerEngine = new PlayerEngine("C:/Users/VENTO/Downloads/ChipaChip - Веном.mp3", control);
-            control.getSongName().setText(playerEngine.getTitle());
-            control.getArtistName().setText(playerEngine.getAuthor());
-            control.getSongSlider().setTotalValue(playerEngine.getSecondsTotal());
-            try {
-                playerEngine.play();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        });
+        control.getPlayButton().addClickListener(this::onPlayButtonClick);
+        control.getMuteButton().addClickListener(this::onMuteButtonClick);
+        control.getSongSlider().addClickListener(this::onSongSliderClick);
+        control.getVolumeSlider().addClickListener(this::onVolumeSliderClick);
+    }
 
-        control.getMuteButton().addClickListener(() -> {
-            if (playerEngine != null) {
-                playerEngine.mute();
-            }
-        });
+    /**
+     * Event on play/pause button click
+     */
+    private void onPlayButtonClick() {
+        if (playerEngine != null) {
+            playerEngine.pause(!control.getPlayButton().isSelected());
+            return;
+        }
 
-        control.getSongSlider().addClickListener(progress -> {
-            if (playerEngine != null) {
-                playerEngine.setPosition(progress);
-            }
-        });
+        playerEngine = new PlayerEngine("E:\\Музыка\\ChipaChip\\(2020) На этажах\\01. На этажах (feat. Sam Wick).mp3", control);
+        control.getSongName().setText(playerEngine.getTitle());
+        control.getArtistName().setText(playerEngine.getAuthor());
+        control.getSongSlider().setTotalValue(playerEngine.getSecondsTotal());
+        try {
+            playerEngine.play();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Event on mute button click
+     */
+    private void onMuteButtonClick() {
+        if (volumeLevel == 0.0) {
+            volumeLevel = 1.0;
+        }
+
+        control.getVolumeSlider().setProgress(volumeLevel);
+        if (playerEngine != null) {
+            playerEngine.setVolume(volumeLevel);
+            playerEngine.setMuted(control.getMuteButton().isSelected());
+        }
+    }
+
+    /**
+     * Event on song slider click
+     */
+    private void onSongSliderClick(double percentage) {
+        if (playerEngine != null) {
+            playerEngine.setPosition(percentage);
+        }
+    }
+
+    /**
+     * Event on volume slider click
+     */
+    private void onVolumeSliderClick(double percentage) {
+        volumeLevel = percentage;
+        control.getMuteButton().setSelected(volumeLevel == 0.0);
+
+        if (playerEngine != null) {
+            playerEngine.setVolume(percentage);
+            playerEngine.setMuted(control.getMuteButton().isSelected());
+        }
     }
 }

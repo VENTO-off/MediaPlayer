@@ -41,8 +41,8 @@ public class ControlSlider extends Pane {
      */
     public ControlSlider(double positionX, double positionY, double width, Control control, boolean displayValues) {
         super();
-        this.setLayoutX(positionX);
-        this.setLayoutY(positionY);
+        this.setLayoutX((int) positionX);
+        this.setLayoutY((int) positionY);
         this.setPrefWidth(width);
         this.setPrefHeight(radius);
         this.setOnMouseClicked(this::onClick);
@@ -106,7 +106,7 @@ public class ControlSlider extends Pane {
      * Click listener
      */
     public interface ClickListener {
-        void onClick(double progress);
+        void onClick(double percentage);
     }
 
     /**
@@ -117,13 +117,13 @@ public class ControlSlider extends Pane {
     }
 
     /**
-     * Get slider percentage
+     * Get slider percentage (after mouse event)
      */
     private double getProgress(MouseEvent e) {
         double min = radius;
         double max = this.getPrefWidth() - radius;
 
-        double percentage = (e.getX() - min) / (max - min);
+        double percentage = ((e == null ? progressButton.getCenterX() : e.getX()) - min) / (max - min);
         if (percentage < 0.0) {
             percentage = 0.0;
         } else if (percentage > 1.0) {
@@ -131,6 +131,13 @@ public class ControlSlider extends Pane {
         }
 
         return percentage;
+    }
+
+    /**
+     * Get slider percentage
+     */
+    public double getProgress() {
+        return getProgress(null);
     }
 
     /**
@@ -227,9 +234,9 @@ public class ControlSlider extends Pane {
             clickListener.onClick(progress);
         }
 
-        setProgress(progress);
-
         isPressed = false;
+
+        setProgress(progress);
     }
 
     /**

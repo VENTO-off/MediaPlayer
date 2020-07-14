@@ -14,7 +14,7 @@ public class VUMeter extends Pane {
     private final Line arrow;
     private final Rotate angle;
 
-    private int[][] dbLevels = new int[][] {
+    private final int[][] dbLevels = new int[][] {
             //db level => angle
             {-20,   0},
             {-10,   13},

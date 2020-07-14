@@ -28,6 +28,7 @@ public class Equalizer extends Pane {
         //init bands
         for (int i = 0; i < BANDS; i++) {
             EqualizerBand band = new EqualizerBand(i * 5);
+            band.setPercentage(0);
             this.bands.add(band);
             this.getChildren().add(band);
         }
@@ -36,9 +37,15 @@ public class Equalizer extends Pane {
     /**
      * Set band percentage
      */
-    public void setBandPercentage(int band, double percent) {
+    public void setBandLevel(int band, double percent) {
         if (band < 0 || band >= BANDS) {
             return;
+        }
+
+        if (percent < 0.0) {
+            percent = 0.0;
+        } else if (percent > 1.0) {
+            percent = 1.0;
         }
 
         bands.get(band).setPercentage(percent);

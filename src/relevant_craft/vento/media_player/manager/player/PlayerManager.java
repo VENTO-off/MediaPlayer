@@ -6,6 +6,8 @@ import relevant_craft.vento.media_player.gui.main.elements.navigation.Navigation
 import relevant_craft.vento.media_player.gui.main.elements.playlist.Playlist;
 import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.gui.main.elements.visualization.Visualization;
+import relevant_craft.vento.media_player.manager.equalizer.EqualizerManager;
+import relevant_craft.vento.media_player.manager.vumeter.VUMeterManager;
 
 import java.io.FileNotFoundException;
 
@@ -16,8 +18,11 @@ public class PlayerManager {
     private final Navigation navigation;
     private final Visualization visualization;
     private final Playlist playlist;
+    private final PlayerEngine playerEngine;
+    private final VUMeterManager leftVU;
+    private final VUMeterManager rightVU;
+    private final EqualizerManager equalizer;
 
-    private PlayerEngine playerEngine;
     private double volumeLevel;
 
     /**
@@ -30,31 +35,38 @@ public class PlayerManager {
         this.navigation = mainGui.getNavigation();
         this.visualization = mainGui.getVisualization();
         this.playlist = mainGui.getPlaylist();
+        this.playerEngine = new PlayerEngine(control);
+        this.leftVU = new VUMeterManager(visualization.getVuLeft());
+        this.rightVU = new VUMeterManager(visualization.getVuRight());
+        this.equalizer = new EqualizerManager(visualization.getEqualizer());
 
-        control.getPlayButton().addClickListener(this::onPlayButtonClick);
-        control.getMuteButton().addClickListener(this::onMuteButtonClick);
-        control.getSongSlider().addClickListener(this::onSongSliderClick);
-        control.getVolumeSlider().addClickListener(this::onVolumeSliderClick);
+        this.control.getPlayButton().addClickListener(this::onPlayButtonClick);
+        this.control.getMuteButton().addClickListener(this::onMuteButtonClick);
+        this.control.getSongSlider().addClickListener(this::onSongSliderClick);
+        this.control.getVolumeSlider().addClickListener(this::onVolumeSliderClick);
+
+        this.playerEngine.addTimeListener(this::onTimeUpdate);
+        this.playerEngine.addLoadListener(this::onAudioLoad);
+        this.playerEngine.addSamplesListener(this::onSamplesUpdate);
+
+        //TODO remove
+        try {
+            playerEngine.loadAudio("C:/Users/VENTO/Downloads/ChipaChip - Веном.mp3");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Event on play/pause button click
      */
     private void onPlayButtonClick() {
-        if (playerEngine != null) {
-            playerEngine.pause(!control.getPlayButton().isSelected());
+        if (playerEngine.isActive()) {
+            playerEngine.setPaused(!control.getPlayButton().isSelected());
             return;
         }
 
-        playerEngine = new PlayerEngine("E:\\Музыка\\ChipaChip\\(2020) На этажах\\01. На этажах (feat. Sam Wick).mp3", control);
-        control.getSongName().setText(playerEngine.getTitle());
-        control.getArtistName().setText(playerEngine.getAuthor());
-        control.getSongSlider().setTotalValue(playerEngine.getSecondsTotal());
-        try {
-            playerEngine.play();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        playerEngine.play();
     }
 
     /**
@@ -66,19 +78,16 @@ public class PlayerManager {
         }
 
         control.getVolumeSlider().setProgress(volumeLevel);
-        if (playerEngine != null) {
-            playerEngine.setVolume(volumeLevel);
-            playerEngine.setMuted(control.getMuteButton().isSelected());
-        }
+
+        playerEngine.setVolume(volumeLevel);
+        playerEngine.setMuted(control.getMuteButton().isSelected());
     }
 
     /**
      * Event on song slider click
      */
     private void onSongSliderClick(double percentage) {
-        if (playerEngine != null) {
-            playerEngine.setPosition(percentage);
-        }
+        playerEngine.setPosition(percentage);
     }
 
     /**
@@ -88,9 +97,33 @@ public class PlayerManager {
         volumeLevel = percentage;
         control.getMuteButton().setSelected(volumeLevel == 0.0);
 
-        if (playerEngine != null) {
-            playerEngine.setVolume(percentage);
-            playerEngine.setMuted(control.getMuteButton().isSelected());
-        }
+        playerEngine.setVolume(percentage);
+        playerEngine.setMuted(control.getMuteButton().isSelected());
+    }
+
+    /**
+     * Event on update player time
+     */
+    private void onTimeUpdate(long currentSeconds, double progress) {
+        control.getSongSlider().setCurrentValue(currentSeconds);
+        control.getSongSlider().setProgress(progress);
+    }
+
+    /**
+     * Event on audio load
+     */
+    private void onAudioLoad() {
+        control.getSongName().setText(playerEngine.getTitle());
+        control.getArtistName().setText(playerEngine.getAuthor());
+        control.getSongSlider().setTotalValue(playerEngine.getSecondsTotal());
+    }
+
+    /**
+     * Event on samples update
+     */
+    private void onSamplesUpdate(float[] samples, float[] leftSamples, float[] rightSamples) {
+        equalizer.setLevels(samples);
+        leftVU.setLevel(leftSamples);
+        rightVU.setLevel(rightSamples);
     }
 }

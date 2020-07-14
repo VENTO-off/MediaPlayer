@@ -70,9 +70,6 @@ public class Visualization extends Pane {
 
         vuRight = new VUMeter(158, getVisualizationHeight() / 2 - VUMeter.getVUHeight() / 2);
         this.getChildren().add(vuRight);
-
-        vuLeft.setLevel(-0.5);
-        vuRight.setLevel(0);
     }
 
     /**
@@ -112,5 +109,40 @@ public class Visualization extends Pane {
      */
     private double getVisualizationHeight() {
         return (this.getPrefHeight() - (this.getPrefHeight() - separator.getStartY()));
+    }
+
+    /**
+     * Return left VU Meter
+     */
+    public VUMeter getVuLeft() {
+        return vuLeft;
+    }
+
+    /**
+     * Return right VU Meter
+     */
+    public VUMeter getVuRight() {
+        return vuRight;
+    }
+
+    /**
+     * Return equalizer
+     */
+    public Equalizer getEqualizer() {
+        return equalizer;
+    }
+
+    /**
+     * Return playlist info
+     */
+    public PlaylistInfo getPlaylistInfo() {
+        return playlistInfo;
+    }
+
+    /**
+     * Return playlist search
+     */
+    public PlaylistSearch getPlaylistSearch() {
+        return playlistSearch;
     }
 }

@@ -14,20 +14,21 @@ import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 
 public class PlayerEngine implements Runnable {
     private final int BUFFER_SIZE = 1024 * 4;
-    private final File file;
-    private final byte[] mutedSound;
+    private final float NORMALIZATION_FACTOR = Short.MAX_VALUE + 1.0F;
     private final Control control;
+    private final byte[] mutedSound;
 
-    private AudioInputStream in;
     private FloatControl volume;
-    long frameSize;
-    float sampleRate;
-    long readFrames;
     private boolean isMuted;
     private boolean isPaused;
     private boolean isRunning;
     private Thread player;
+    private TimeListener timeListener;
+    private LoadListener loadListener;
+    private SamplesListener samplesListener;
 
+    private File file;
+    private AudioInputStream in;
     private long audioLength;
     private long secondsTotal;
     private long secondsCurrent;
@@ -35,19 +36,35 @@ public class PlayerEngine implements Runnable {
     private int bitrate;
     private String title;
     private String author;
+    private long frameSize;
+    private float sampleRate;
+    private long readFrames;
 
     /**
      * Init player engine
      */
-    public PlayerEngine(String path, Control control) {
-        this.file = new File(path);
-        this.mutedSound = this.getMutedSound();
+    public PlayerEngine(Control control) {
         this.control = control;
+        this.mutedSound = getMutedSound();
         this.isMuted = false;
         this.isPaused = false;
         this.isRunning = false;
+    }
 
-        this.loadAudioData();
+    /**
+     * Load audio file
+     */
+    public void loadAudio(String path) throws FileNotFoundException {
+        if (isActive()) {
+            stop();
+        }
+
+        file = new File(path);
+        if (!file.exists()) {
+            throw new FileNotFoundException();
+        }
+
+        loadAudioData();
     }
 
     /**
@@ -56,11 +73,15 @@ public class PlayerEngine implements Runnable {
     @Override
     public void run() {
         isRunning = true;
-        this.renderCurrentPosition();
+
+        //notify time listener
+        if (timeListener != null) {
+            timeListener.onUpdate(secondsCurrent, timeToPercentage());
+        }
 
         try {
             in = AudioSystem.getAudioInputStream(file);
-            AudioFormat format = this.getOutFormat(in.getFormat());
+            AudioFormat format = getOutFormat(in.getFormat());
             DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
 
             //prepare line
@@ -71,10 +92,10 @@ public class PlayerEngine implements Runnable {
 
                     //volume
                     volume = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
-                    this.setVolume(control.getVolumeSlider().getProgress());
+                    setVolume(control.getVolumeSlider().getProgress());
 
                     //stream audio
-                    this.stream(AudioSystem.getAudioInputStream(format, in), line);
+                    stream(AudioSystem.getAudioInputStream(format, in), line);
 
                     line.drain();
                     line.stop();
@@ -90,17 +111,16 @@ public class PlayerEngine implements Runnable {
         } finally {
             try {
                 in.close();
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) {}
         }
     }
 
     /**
      * Play audio
      */
-    public void play() throws FileNotFoundException {
-        if (!file.exists()) {
-            throw new FileNotFoundException();
+    public void play() {
+        if (file == null) {
+            return;
         }
 
         //run player
@@ -108,14 +128,13 @@ public class PlayerEngine implements Runnable {
             player = new Thread(this);
             player.setPriority(Thread.MAX_PRIORITY);
             player.start();
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
     /**
      * Pause/resume audio
      */
-    public void pause(boolean value) {
+    public void setPaused(boolean value) {
         isPaused = value;
     }
 
@@ -127,28 +146,36 @@ public class PlayerEngine implements Runnable {
     }
 
     /**
+     * Stop audio
+     */
+    public void stop() {
+        try {
+            isRunning = false;
+            player.join();
+        } catch (Exception ignored) {}
+    }
+
+    /**
      * Set position
      */
     public void setPosition(double percentage) {
-        try {
-            //stop player
-            isRunning = false;
-            player.join();
+        //stop player
+        stop();
 
-            //set new position
-            secondsCurrent = percentageToTime(percentage);
+        //set new position
+        secondsCurrent = percentageToTime(percentage);
 
-            //start player
-            play();
-        } catch (Exception ignored) {
-        }
+        //start player
+        play();
     }
 
     /**
      * Set volume
      */
     public void setVolume(double percentage) {
-        volume.setValue(20.0f * (float) Math.log10(percentage));
+        if (volume != null) {
+            volume.setValue(20.0f * (float) Math.log10(percentage));
+        }
     }
 
     /**
@@ -186,11 +213,17 @@ public class PlayerEngine implements Runnable {
             //write audio bytes
             line.write((isMuted ? mutedSound : buffer), 0, n);
 
+            //get samples
+            getSamples(buffer, n);
+
             //update current time
             long secondsElapsed = Math.round(readFrames / sampleRate);
             if (secondsCurrent != secondsElapsed) {
                 secondsCurrent = secondsElapsed;
-                this.renderCurrentPosition();
+                //notify time listener
+                if (timeListener != null) {
+                    timeListener.onUpdate(secondsCurrent, timeToPercentage());
+                }
             }
         }
     }
@@ -221,7 +254,7 @@ public class PlayerEngine implements Runnable {
     private void loadAudioData() {
         try {
             AudioInputStream in = AudioSystem.getAudioInputStream(file);
-            AudioFormat format = this.getOutFormat(in.getFormat());
+            AudioFormat format = getOutFormat(in.getFormat());
 
             //seconds current
             secondsCurrent = 0;
@@ -257,6 +290,11 @@ public class PlayerEngine implements Runnable {
             //bytes per second
             bytesPerSecond = audioLength / secondsTotal;
 
+            //notify audio loaded listener
+            if (loadListener != null) {
+                loadListener.onAudioLoaded();
+            }
+
             in.close();
         } catch (Exception e) {
             //TODO throw
@@ -264,11 +302,79 @@ public class PlayerEngine implements Runnable {
     }
 
     /**
-     * Render current position
+     * Get audio samples
      */
-    private void renderCurrentPosition() {
-        control.getSongSlider().setCurrentValue(secondsCurrent);
-        control.getSongSlider().setProgress(timeToPercentage());
+    private void getSamples(byte[] buffer, int n) {
+        float[] samples = new float[BUFFER_SIZE / 2];
+        float[] leftSamples = new float[BUFFER_SIZE / 4];
+        float[] rightSamples = new float[BUFFER_SIZE / 4];
+
+        for (int i = 0, sampleIndex = 0; i < n; ) {
+            //left samples
+            int leftSample = 0;
+            leftSample |= buffer[i++] & 0xFF;
+            leftSample |= buffer[i++] << 8;
+            leftSamples[sampleIndex] = leftSample / NORMALIZATION_FACTOR;
+
+            //right samples
+            int rightSample = 0;
+            rightSample |= buffer[i++] & 0xFF;
+            rightSample |= buffer[i++] << 8;
+            rightSamples[sampleIndex] = rightSample / NORMALIZATION_FACTOR;
+
+            //left and right samples
+            samples[sampleIndex * 2] = leftSamples[sampleIndex];
+            samples[sampleIndex * 2 + 1] = rightSamples[sampleIndex];
+
+            sampleIndex++;
+        }
+
+        //notify samples updater listener
+        if (samplesListener != null) {
+            samplesListener.onUpdate(samples, leftSamples, rightSamples);
+        }
+    }
+
+    /**
+     * Time updater listener
+     */
+    public interface TimeListener {
+        void onUpdate(long currentSeconds, double progress);
+    }
+
+    /**
+     * Add time updater listener
+     */
+    public void addTimeListener(TimeListener timeListener) {
+        this.timeListener = timeListener;
+    }
+
+    /**
+     * Audio loader listener
+     */
+    public interface LoadListener {
+        void onAudioLoaded();
+    }
+
+    /**
+     * Add audio loader listener
+     */
+    public void addLoadListener(LoadListener loadListener) {
+        this.loadListener = loadListener;
+    }
+
+    /**
+     * Samples updater listener
+     */
+    public interface SamplesListener {
+        void onUpdate(float[] samples, float[] leftSamples, float[] rightSamples);
+    }
+
+    /**
+     * Add samples updater listener
+     */
+    public void addSamplesListener(SamplesListener samplesListener) {
+        this.samplesListener = samplesListener;
     }
 
     /**
@@ -291,8 +397,7 @@ public class PlayerEngine implements Runnable {
     private void sleep(long millis) {
         try {
             Thread.sleep(millis);
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
     /**
@@ -328,5 +433,16 @@ public class PlayerEngine implements Runnable {
      */
     public String getAuthor() {
         return author;
+    }
+
+    /**
+     * Return is player active
+     */
+    public boolean isActive() {
+        if (player != null) {
+            return player.isAlive();
+        }
+
+        return false;
     }
 }

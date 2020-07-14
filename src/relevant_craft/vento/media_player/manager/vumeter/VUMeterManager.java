@@ -67,10 +67,12 @@ public class VUMeterManager {
     private void initVUMeterChecker() {
         Thread checker = new Thread(() -> {
             while (true) {
-                if (buffer > 0.0) {
-                    if (System.currentTimeMillis() - lastUpdate > 30) {
+                if (System.currentTimeMillis() - lastUpdate > 50) {
+                    if (buffer > 0.0) {
                         buffer -= 0.02;     //decrease speed
                         Platform.runLater(() -> vuMeter.setLevel(convertAndNormalize(buffer)));
+                    } else {
+                        Platform.runLater(() -> vuMeter.setLevel(convertAndNormalize(0)));
                     }
                 }
 

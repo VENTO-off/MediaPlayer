@@ -4,6 +4,8 @@ import com.tagtraum.jipes.math.FFTFactory;
 import javafx.application.Platform;
 import relevant_craft.vento.media_player.gui.main.elements.visualization.Equalizer;
 
+import java.util.Arrays;
+
 public class EqualizerManager {
     private final int BANDS = 32;
     private final Equalizer equalizer;
@@ -127,13 +129,20 @@ public class EqualizerManager {
     private void initEqualizerLevelChecker() {
         Thread checker = new Thread(() -> {
             while (true) {
-                if (System.currentTimeMillis() - lastUpdate > 30) {
-                    for (int i = 0; i < audioBandBuffer.length; i++) {
-                        if (audioBandBuffer[i] > 0.0) {
-                            bandBuffer[i] -= decreaseBuffer[i] * 1.5;       //decrease speed
-                            audioBandBuffer[i] = bandBuffer[i] / frequencyBandHighest[i];
+                if (System.currentTimeMillis() - lastUpdate > 50) {
+                    if (Arrays.stream(audioBandBuffer).max().getAsDouble() > 0.0) {
+                        for (int i = 0; i < audioBandBuffer.length; i++) {
+                            if (audioBandBuffer[i] > 0.0) {
+                                bandBuffer[i] -= decreaseBuffer[i] * 1.5;       //decrease speed
+                                audioBandBuffer[i] = bandBuffer[i] / frequencyBandHighest[i];
+                                final int band = i;
+                                Platform.runLater(() -> equalizer.setBandLevel(band, audioBandBuffer[band]));
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < audioBandBuffer.length; i++) {
                             final int band = i;
-                            Platform.runLater(() -> equalizer.setBandLevel(band, audioBandBuffer[band]));
+                            Platform.runLater(() -> equalizer.setBandLevel(band, 0));
                         }
                     }
                 }

@@ -72,6 +72,7 @@ public class VUMeterManager {
                         buffer -= 0.02;     //decrease speed
                         Platform.runLater(() -> vuMeter.setLevel(convertAndNormalize(buffer)));
                     } else {
+                        //reset to default
                         Platform.runLater(() -> vuMeter.setLevel(convertAndNormalize(0)));
                     }
                 }

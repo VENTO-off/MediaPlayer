@@ -41,4 +41,11 @@ public class EqualizerBandTrail extends Pane {
             this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
         }
     }
+
+    /**
+     * Set Y position
+     */
+    public void setPositionY(double positionY) {
+        this.setLayoutY(positionY);
+    }
 }

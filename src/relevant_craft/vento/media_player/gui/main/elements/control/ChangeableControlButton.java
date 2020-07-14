@@ -24,6 +24,10 @@ public class ChangeableControlButton extends ControlButton {
      * Change icon on click
      */
     protected void onClick(MouseEvent e) {
+        if (!canClick()) {
+            return;
+        }
+
         this.setValue(!this.isSelected);
         super.onClick(e);
     }

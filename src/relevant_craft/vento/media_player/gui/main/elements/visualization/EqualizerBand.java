@@ -20,6 +20,7 @@ public class EqualizerBand extends Pane {
     private static final int TRAILS = 28;
 
     private final List<EqualizerBandTrail> trails;
+    private final EqualizerBandTrail flowTrail;
 
     /**
      * Init equalizer band
@@ -28,6 +29,7 @@ public class EqualizerBand extends Pane {
         super();
 
         this.trails = new ArrayList<>();
+        this.flowTrail = new EqualizerBandTrail(HEIGHT);
 
         //init layout
         this.setPrefWidth(WIDTH);
@@ -53,18 +55,34 @@ public class EqualizerBand extends Pane {
             this.trails.add(trail);
             this.getChildren().add(trail);
         }
+
+        //init flow trail
+        this.flowTrail.setActive(true);
+        this.getChildren().add(this.flowTrail);
+
+        //default percentage
+        this.setPercentage(0.0);
     }
 
     /**
      * Set band percentage
      */
-    public void setPercentage(double percent) {
-        final int trails = (int) (TRAILS * percent);
+    public synchronized void setPercentage(double percentage) {
+        final int trails = (int) (TRAILS * percentage);
 
         int i = 0;
         for (EqualizerBandTrail trail : this.trails) {
             trail.setActive(i++ <= trails);
         }
+    }
+
+    /**
+     * Set flow trail percentage
+     */
+    public synchronized void setFlowPercentage(double percentage) {
+        final double positionY = HEIGHT * percentage;
+
+        flowTrail.setPositionY(HEIGHT - positionY);
     }
 
     /**

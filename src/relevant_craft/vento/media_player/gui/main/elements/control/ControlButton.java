@@ -17,8 +17,10 @@ import relevant_craft.vento.media_player.manager.picture.Pictures;
 
 public class ControlButton extends StackPane {
     private static final double radius = 14;
-    protected static final double opacity = 0.3;
-    protected static final Duration animationTime = Duration.millis(100);
+
+    protected final double opacity = 0.3;
+    protected final Duration animationTime = Duration.millis(100);
+    private final long clickTimeout = 250;
 
     protected final Circle circle;
     protected final ImageView image;
@@ -26,6 +28,7 @@ public class ControlButton extends StackPane {
 
     protected Timeline animation;
     private ClickListener clickListener;
+    protected long lastClick;
 
     /**
      * Init button for control bar
@@ -34,6 +37,7 @@ public class ControlButton extends StackPane {
         super();
         this.setLayoutX(positionX);
         this.setLayoutY(positionY);
+        this.lastClick = 0;
 
         //init button's background
         circle = new Circle(radius);
@@ -72,6 +76,11 @@ public class ControlButton extends StackPane {
      * Notify listener on click
      */
     protected void onClick(MouseEvent e) {
+        if (!canClick()) {
+            return;
+        }
+        lastClick = System.currentTimeMillis();
+
         if (clickListener != null) {
             clickListener.onClick();
         }
@@ -81,6 +90,10 @@ public class ControlButton extends StackPane {
      * Play animation on mouse press
      */
     protected void onPressed(MouseEvent e) {
+        if (!canClick()) {
+            return;
+        }
+
         if (animation != null && animation.getStatus() == Animation.Status.RUNNING) {
             animation.stop();
         }
@@ -96,6 +109,13 @@ public class ControlButton extends StackPane {
         animation = new Timeline(new KeyFrame(animationTime, new KeyValue(circle.opacityProperty(), 0.0)));
         animation.setDelay(Duration.millis(250));
         animation.play();
+    }
+
+    /**
+     * Check button timeout after last click
+     */
+    protected boolean canClick() {
+        return System.currentTimeMillis() - lastClick > clickTimeout;
     }
 
     /**

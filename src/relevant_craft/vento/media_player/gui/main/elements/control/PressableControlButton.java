@@ -22,6 +22,9 @@ public class PressableControlButton extends ControlButton {
      * Change icon on click
      */
     protected void onClick(MouseEvent e) {
+        if (!canClick()) {
+            return;
+        }
         isSelected = !isSelected;
         super.onClick(e);
     }
@@ -30,6 +33,10 @@ public class PressableControlButton extends ControlButton {
      * Play animation on mouse press
      */
     protected void onPressed(MouseEvent e) {
+        if (!canClick()) {
+            return;
+        }
+
         if (animation != null && animation.getStatus() == Animation.Status.RUNNING) {
             animation.stop();
         }

@@ -48,7 +48,7 @@ public class EqualizerManager {
 
         //convert to db
         for (int i = 0; i < magnitudes.length; i++) {
-            magnitudes[i] = 20 * Math.log(magnitudes[i]);
+            magnitudes[i] = 20.0 * Math.log(magnitudes[i]);
         }
 
         //make frequency bands (for 32 bands)

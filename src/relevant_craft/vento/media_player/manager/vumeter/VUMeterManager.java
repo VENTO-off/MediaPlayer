@@ -53,7 +53,7 @@ public class VUMeterManager {
         }
 
         //convert to db
-        double dbLevel = 10 * Math.log10(level);
+        double dbLevel = 10.0 * Math.log10(level);
 
         //normalize
         dbLevel = (((dbLevel - MIN_LEVEL) * (MAX_LEVEL - MIN_LEVEL)) / (0.0 - MIN_LEVEL)) + MIN_LEVEL;

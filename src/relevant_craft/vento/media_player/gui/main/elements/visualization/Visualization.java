@@ -114,14 +114,14 @@ public class Visualization extends Pane {
     /**
      * Return left VU Meter
      */
-    public VUMeter getVuLeft() {
+    public VUMeter getLeftVU() {
         return vuLeft;
     }
 
     /**
      * Return right VU Meter
      */
-    public VUMeter getVuRight() {
+    public VUMeter getRightVU() {
         return vuRight;
     }
 

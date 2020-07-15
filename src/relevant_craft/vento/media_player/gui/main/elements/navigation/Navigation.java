@@ -12,6 +12,9 @@ import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.manager.color.Colors;
 import relevant_craft.vento.media_player.manager.picture.Pictures;
 
+import java.util.HashMap;
+import java.util.UUID;
+
 public class Navigation extends ScrollPane {
     private final Stage stage;
     private final AnchorPane layout;
@@ -20,6 +23,7 @@ public class Navigation extends ScrollPane {
     private final ContentScrollBar scrollBar;
 
     private Pane content;
+    private NavigationList localPlaylists;
 
     /**
      * Init navigation bar
@@ -56,20 +60,14 @@ public class Navigation extends ScrollPane {
             viewport.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
         });
 
-        //TODO manage content
+        //init content
         content = new VBox();
         content.setPrefWidth(this.getPrefWidth());
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        NavigationList playlists = new NavigationList("ПЛЕЙЛИСТЫ");
-        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #1"));
-        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #2"));
-        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #3"));
-        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #4"));
-        playlists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, "Playlist #5"));
-
-        content.setPrefHeight(playlists.calculateHeight() + 20);
-        content.getChildren().add(playlists);
+        //add local playlists
+        localPlaylists = new NavigationList("ПЛЕЙЛИСТЫ");
+        content.getChildren().add(localPlaylists);
 
         this.setContent(content);
     }
@@ -83,5 +81,28 @@ public class Navigation extends ScrollPane {
         layout.getChildren().add(scrollBar);
 
         return scrollBar;
+    }
+
+    /**
+     * Set new playlists
+     */
+    public void setPlaylists(HashMap<UUID, String> playlists) {
+        //clear all
+        localPlaylists.clearElements();
+
+        //add all
+        for (UUID uuid : playlists.keySet()) {
+            localPlaylists.addElement(new NavigationItem(Pictures.PLAYLIST_ICON, playlists.get(uuid), uuid));
+        }
+
+        //update height
+        content.setPrefHeight(localPlaylists.calculateHeight() + 20);
+    }
+
+    /**
+     * Get navigation list (local playlists)
+     */
+    public NavigationList getLocalPlaylists() {
+        return localPlaylists;
     }
 }

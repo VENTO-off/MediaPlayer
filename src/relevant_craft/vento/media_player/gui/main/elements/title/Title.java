@@ -87,7 +87,7 @@ public class Title extends Pane {
      * Init title text
      */
     private void initTitleText() {
-        titleText = new Text("Richen" + " v" + VENTO.version);
+        titleText = new Text(VENTO.PLAYER + " v" + VENTO.VERSION);
         titleText.setX(14);
         titleText.setY(21);
         titleText.setFill(Color.WHITE);

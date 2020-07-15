@@ -12,6 +12,7 @@ import relevant_craft.vento.media_player.manager.font.Fonts;
 public class NavigationList extends VBox {
     private int size;
     private int lastDragID;
+    private ClickListener clickListener;
 
     /**
      * Init navigation list
@@ -34,10 +35,17 @@ public class NavigationList extends VBox {
     }
 
     /**
+     * Clear all elements
+     */
+    public void clearElements() {
+        this.getChildren().remove(1, this.getChildren().size());
+    }
+
+    /**
      * Set order of element
      */
-    public void setOrder(NavigationItem data) {
-        this.getChildren().add(lastDragID, new NavigationListElement(this, data));
+    public void setOrder(NavigationItem data, boolean isSelected) {
+        this.getChildren().add(lastDragID, new NavigationListElement(this, data, isSelected));
         this.lastDragID = -1;
     }
 
@@ -99,12 +107,32 @@ public class NavigationList extends VBox {
     /**
      * Event on mouse click
      */
-    public void onClick() {
+    public void onClick(NavigationItem data) {
+        //deselect all
         for (Node node : this.getChildren()) {
             if (node instanceof NavigationListElement) {
                 NavigationListElement element = (NavigationListElement) node;
                 element.setSelected(false);
             }
         }
+
+        //notify click listener
+        if (clickListener != null) {
+            clickListener.onClick(data);
+        }
+    }
+
+    /**
+     * Click listener
+     */
+    public interface ClickListener {
+        void onClick(NavigationItem data);
+    }
+
+    /**
+     * Add click listener
+     */
+    public void addClickListener(ClickListener clickListener) {
+        this.clickListener = clickListener;
     }
 }

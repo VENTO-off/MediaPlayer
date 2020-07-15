@@ -174,7 +174,7 @@ public class PlayerEngine implements Runnable {
      */
     public void setVolume(double percentage) {
         if (volume != null) {
-            volume.setValue(20.0f * (float) Math.log10(percentage));
+            volume.setValue(20.0F * (float) Math.log10(percentage));
         }
     }
 

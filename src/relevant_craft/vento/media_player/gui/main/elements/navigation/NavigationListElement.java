@@ -38,6 +38,10 @@ public class NavigationListElement extends Pane {
      * Init navigation list element
      */
     public NavigationListElement(NavigationList list, NavigationItem data) {
+        this(list, data, false);
+    }
+
+    public NavigationListElement(NavigationList list, NavigationItem data, boolean isSelected) {
         super();
 
         this.id = lastID++;
@@ -45,7 +49,7 @@ public class NavigationListElement extends Pane {
         this.data = data;
         this.image = new ImageView();
         this.text = new Text();
-        this.isSelected = false;
+        this.isSelected = isSelected;
         this.lastUpdate = System.currentTimeMillis();
 
         this.initStyle();
@@ -159,10 +163,16 @@ public class NavigationListElement extends Pane {
      * Event on drag detected
      */
     private void onDragDetected(MouseEvent e) {
+        //if element alone
+        if (list.getSize() <= 2) {
+            return;
+        }
+
         Dragboard dragboard = startDragAndDrop(TransferMode.MOVE);
 
         ClipboardContent content = new ClipboardContent();
         content.put(ITEM_LIST, data);
+        content.putString(String.valueOf(isSelected));
 
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
@@ -201,7 +211,7 @@ public class NavigationListElement extends Pane {
 
         if (dragboard.hasContent(ITEM_LIST)) {
             clearBlank();
-            list.setOrder((NavigationItem) dragboard.getContent(ITEM_LIST));
+            list.setOrder((NavigationItem) dragboard.getContent(ITEM_LIST), Boolean.parseBoolean(dragboard.getString()));
             isSuccess = true;
         }
 
@@ -209,7 +219,7 @@ public class NavigationListElement extends Pane {
     }
 
     /**
-     * Event on drag done
+     * Event on drag done (on fail drag)
      */
     private void onDragDone(DragEvent e) {
         Dragboard dragboard = e.getDragboard();
@@ -217,7 +227,7 @@ public class NavigationListElement extends Pane {
         if (e.getAcceptedTransferMode() == null) {
             if (dragboard.hasContent(ITEM_LIST)) {
                 clearBlank();
-                list.setOrder((NavigationItem) dragboard.getContent(ITEM_LIST));
+                list.setOrder((NavigationItem) dragboard.getContent(ITEM_LIST), Boolean.parseBoolean(dragboard.getString()));
             }
         }
     }
@@ -226,8 +236,8 @@ public class NavigationListElement extends Pane {
      * Event on mouse click
      */
     private void onClick(MouseEvent e) {
-        list.onClick();
-        setSelected(!isSelected);
+        list.onClick(data);
+        setSelected(true);
     }
 
     /**

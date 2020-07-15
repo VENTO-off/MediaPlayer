@@ -3,10 +3,13 @@ package relevant_craft.vento.media_player.manager.player;
 import relevant_craft.vento.media_player.gui.main.MainGui;
 import relevant_craft.vento.media_player.gui.main.elements.control.Control;
 import relevant_craft.vento.media_player.gui.main.elements.navigation.Navigation;
+import relevant_craft.vento.media_player.gui.main.elements.navigation.NavigationItem;
 import relevant_craft.vento.media_player.gui.main.elements.playlist.Playlist;
 import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.gui.main.elements.visualization.Visualization;
 import relevant_craft.vento.media_player.manager.equalizer.EqualizerManager;
+import relevant_craft.vento.media_player.manager.playlist.PlaylistData;
+import relevant_craft.vento.media_player.manager.playlist.PlaylistManager;
 import relevant_craft.vento.media_player.manager.vumeter.VUMeterManager;
 
 import java.io.FileNotFoundException;
@@ -22,8 +25,10 @@ public class PlayerManager {
     private final VUMeterManager leftVU;
     private final VUMeterManager rightVU;
     private final EqualizerManager equalizer;
+    private final PlaylistManager playlistManager;
 
     private double volumeLevel;
+    private PlaylistData currentPlaylist;
 
     /**
      * Init player manager
@@ -36,9 +41,10 @@ public class PlayerManager {
         this.visualization = mainGui.getVisualization();
         this.playlist = mainGui.getPlaylist();
         this.playerEngine = new PlayerEngine(control);
-        this.leftVU = new VUMeterManager(visualization.getVuLeft());
-        this.rightVU = new VUMeterManager(visualization.getVuRight());
+        this.leftVU = new VUMeterManager(visualization.getLeftVU());
+        this.rightVU = new VUMeterManager(visualization.getRightVU());
         this.equalizer = new EqualizerManager(visualization.getEqualizer());
+        this.playlistManager = new PlaylistManager();
 
         this.control.getPlayButton().addClickListener(this::onPlayButtonClick);
         this.control.getMuteButton().addClickListener(this::onMuteButtonClick);
@@ -49,10 +55,43 @@ public class PlayerManager {
         this.playerEngine.addLoadListener(this::onAudioLoad);
         this.playerEngine.addSamplesListener(this::onSamplesUpdate);
 
+        this.renderPlaylistNames();
+        this.navigation.getLocalPlaylists().addClickListener(this::onPlaylistClick);
+
         //TODO remove
         try {
             playerEngine.loadAudio("C:/Users/VENTO/Downloads/ChipaChip - Веном.mp3");
         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Load playlist names
+     */
+    private void renderPlaylistNames() {
+        navigation.setPlaylists(playlistManager.getPlaylists());
+    }
+
+    /**
+     * Load playlist
+     */
+    private void renderPlaylist() {
+        //TODO render playlist songs
+    }
+
+    /**
+     * Event on playlist click
+     */
+    private void onPlaylistClick(NavigationItem data) {
+        if (currentPlaylist != null && currentPlaylist.getUUID().equals(data.getUUID())) {
+            return;
+        }
+
+        try {
+            currentPlaylist = playlistManager.loadPlaylist(data.getUUID());
+            renderPlaylist();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

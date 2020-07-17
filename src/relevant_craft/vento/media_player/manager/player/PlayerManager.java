@@ -66,35 +66,9 @@ public class PlayerManager {
         }
     }
 
-    /**
-     * Load playlist names
-     */
-    private void renderPlaylistNames() {
-        navigation.setPlaylists(playlistManager.getPlaylists());
-    }
-
-    /**
-     * Load playlist
-     */
-    private void renderPlaylist() {
-        //TODO render playlist songs
-    }
-
-    /**
-     * Event on playlist click
-     */
-    private void onPlaylistClick(NavigationItem data) {
-        if (currentPlaylist != null && currentPlaylist.getUUID().equals(data.getUUID())) {
-            return;
-        }
-
-        try {
-            currentPlaylist = playlistManager.loadPlaylist(data.getUUID());
-            renderPlaylist();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+    /******************************************************************************************************************
+        Control events
+     ******************************************************************************************************************/
 
     /**
      * Event on play/pause button click
@@ -140,6 +114,11 @@ public class PlayerManager {
         playerEngine.setMuted(control.getMuteButton().isSelected());
     }
 
+
+    /******************************************************************************************************************
+        PlayerEngine events
+     ******************************************************************************************************************/
+
     /**
      * Event on update player time
      */
@@ -164,5 +143,40 @@ public class PlayerManager {
         equalizer.setLevels(samples);
         leftVU.setLevel(leftSamples);
         rightVU.setLevel(rightSamples);
+    }
+
+
+    /******************************************************************************************************************
+        Playlist events and methods
+     ******************************************************************************************************************/
+
+    /**
+     * Load playlist names
+     */
+    private void renderPlaylistNames() {
+        navigation.setPlaylists(playlistManager.getPlaylists());
+    }
+
+    /**
+     * Load playlist
+     */
+    private void renderPlaylist() {
+        //TODO render playlist songs
+    }
+
+    /**
+     * Event on playlist click
+     */
+    private void onPlaylistClick(NavigationItem data) {
+        if (currentPlaylist != null && currentPlaylist.getUUID().equals(data.getUUID())) {
+            return;
+        }
+
+        try {
+            currentPlaylist = playlistManager.loadPlaylist(data.getUUID());
+            renderPlaylist();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

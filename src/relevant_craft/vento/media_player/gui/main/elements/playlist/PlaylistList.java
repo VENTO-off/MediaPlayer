@@ -1,5 +1,6 @@
 package relevant_craft.vento.media_player.gui.main.elements.playlist;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
@@ -31,9 +32,12 @@ public class PlaylistList extends VBox {
     /**
      * Set order of element
      */
-    public void setOrder(PlaylistItem data) {
-        this.getChildren().add(lastDragID, new PlaylistElement(this, data));
-        this.lastDragID = -1;
+    public void setOrder(PlaylistItem data, boolean isSelected) {
+        Platform.runLater(() -> {
+            this.getChildren().add(lastDragID, new PlaylistElement(this, data, isSelected));
+            this.calculateOrderNumbers();
+            this.lastDragID = -1;
+        });
     }
 
     /**
@@ -80,6 +84,19 @@ public class PlaylistList extends VBox {
             if (node instanceof PlaylistElement) {
                 PlaylistElement element = (PlaylistElement) node;
                 element.setSelected(false);
+            }
+        }
+    }
+
+    /**
+     * Calculate order numbers
+     */
+    public void calculateOrderNumbers() {
+        int index = 1;
+        for (Node node : this.getChildren()) {
+            if (node instanceof PlaylistElement) {
+                PlaylistElement element = (PlaylistElement) node;
+                element.renderOrderNumber(index++);
             }
         }
     }

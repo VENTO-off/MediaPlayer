@@ -22,7 +22,7 @@ public class NavigationList extends VBox {
         this.size = 0;
         this.lastDragID = -1;
 
-        this.setPadding(new Insets(0, 0, 0, 19.0));
+        this.setPadding(new Insets(0, 0, 0, 10.0));
         this.setHeader(header);
     }
 

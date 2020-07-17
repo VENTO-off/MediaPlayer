@@ -72,13 +72,14 @@ public class Playlist extends ScrollPane {
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
 
         PlaylistList playlist = new PlaylistList();
-        playlist.addElement(new PlaylistItem("01. ChipaChip - Глобус (Scratch by DJ Vader One)", 181, "MP3", 44, 320, 7329546));
-        playlist.addElement(new PlaylistItem("02. ChipaChip - Мороженка (feat. 4SGM, Лёша Свик)", 226, "MP3", 44, 320, 9122611));
-        playlist.addElement(new PlaylistItem("03. ChipaChip - Минутная лайф", 184, "MP3", 44, 320, 7434403));
-        playlist.addElement(new PlaylistItem("04. ChipaChip - Флэшбэк", 142, "MP3", 44, 320, 5735710));
-        playlist.addElement(new PlaylistItem("05. ChipaChip - Монолог", 181, "MP3", 44, 320, 7319060));
-        playlist.addElement(new PlaylistItem("06. ChipaChip - Репит", 157, "MP3", 44, 320, 6364856));
-        playlist.addElement(new PlaylistItem("07. ChipaChip - По проводам", 212, "MP3", 44, 320, 8545894));
+        playlist.addElement(new PlaylistItem("ChipaChip - Глобус (Scratch by DJ Vader One)", 181, "MP3", 44, 320, 7329546));
+        playlist.addElement(new PlaylistItem("ChipaChip - Мороженка (feat. 4SGM, Лёша Свик)", 226, "MP3", 44, 320, 9122611));
+        playlist.addElement(new PlaylistItem("ChipaChip - Минутная лайф", 184, "MP3", 44, 320, 7434403));
+        playlist.addElement(new PlaylistItem("ChipaChip - Флэшбэк", 142, "MP3", 44, 320, 5735710));
+        playlist.addElement(new PlaylistItem("ChipaChip - Монолог", 181, "MP3", 44, 320, 7319060));
+        playlist.addElement(new PlaylistItem("ChipaChip - Репит", 157, "MP3", 44, 320, 6364856));
+        playlist.addElement(new PlaylistItem("ChipaChip - По проводам", 212, "MP3", 44, 320, 8545894));
+        playlist.calculateOrderNumbers();
 
         content.setPrefHeight(playlist.calculateHeight() + 10);
         content.getChildren().add(playlist);

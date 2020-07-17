@@ -1,5 +1,7 @@
 package relevant_craft.vento.media_player.gui.main.elements.playlist;
 
+import com.sun.javafx.tk.FontLoader;
+import com.sun.javafx.tk.Toolkit;
 import javafx.application.Platform;
 import javafx.scene.Cursor;
 import javafx.scene.Node;
@@ -20,9 +22,14 @@ import relevant_craft.vento.media_player.manager.font.Fonts;
 import relevant_craft.vento.media_player.utils.SizeUtils;
 import relevant_craft.vento.media_player.utils.TimeUtils;
 
+import java.text.DecimalFormat;
+
 public class PlaylistElement extends Pane {
     private static final DataFormat ITEM_LIST = new DataFormat("playlist/item");
     private static final CornerRadii CORNER_RADII = new CornerRadii(3.0, 0, 0, 3.0, false);
+    private static final FontLoader FONT_LOADER = Toolkit.getToolkit().getFontLoader();
+    private static final DecimalFormat FORMAT = new DecimalFormat("00");
+    private static final double TEXT_WIDTH = 500;
     private static int lastID = 0;
 
     private final int id;
@@ -39,6 +46,10 @@ public class PlaylistElement extends Pane {
      * Init playlist element
      */
     public PlaylistElement(PlaylistList list, PlaylistItem data) {
+        this(list, data, false);
+    }
+
+    public PlaylistElement(PlaylistList list, PlaylistItem data, boolean isSelected) {
         super();
 
         this.id = lastID++;
@@ -47,6 +58,8 @@ public class PlaylistElement extends Pane {
         this.text = new Text();
         this.subText = new Text();
         this.time = new Text();
+        this.isSelected = isSelected;
+        this.lastUpdate = System.currentTimeMillis();
 
         this.initStyle();
 
@@ -72,11 +85,12 @@ public class PlaylistElement extends Pane {
 
         //render song name
         final double fixY = 11;
-        this.text.setText(data.getDisplayName());
+        this.setWidthText(this.text, data.getDisplayName());
         this.text.setFill(Color.WHITE);
         this.text.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 15));
         this.text.setLayoutX(10);
         this.text.setLayoutY(fixY + 7);
+        this.text.setWrappingWidth(500);
         this.text.setDisable(true);
         this.getChildren().add(this.text);
 
@@ -84,7 +98,7 @@ public class PlaylistElement extends Pane {
         this.subText.setText(String.join(" :: ", data.getAudioFormat(), String.join(", ", data.getSamplingRate() + " kHz", + data.getBitRate() + " kbps", SizeUtils.formatSize(data.getSize()))));
         this.subText.setFill(Color.web(Color.WHITE.toString(), 0.25));
         this.subText.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 11));
-        this.subText.setLayoutX(30);
+        this.subText.setLayoutX(this.text.getLayoutX());
         this.subText.setLayoutY(fixY + 22);
         this.subText.setDisable(true);
         this.getChildren().add(this.subText);
@@ -171,10 +185,13 @@ public class PlaylistElement extends Pane {
      * Event on drag detected
      */
     private void onDragDetected(MouseEvent e) {
+        //TODO if element alone
+
         Dragboard dragboard = startDragAndDrop(TransferMode.MOVE);
 
         ClipboardContent content = new ClipboardContent();
         content.put(ITEM_LIST, data);
+        content.putString(String.valueOf(isSelected));
 
         SnapshotParameters params = new SnapshotParameters();
         params.setFill(Color.TRANSPARENT);
@@ -213,7 +230,7 @@ public class PlaylistElement extends Pane {
 
         if (dragboard.hasContent(ITEM_LIST)) {
             clearBlank();
-            list.setOrder((PlaylistItem) dragboard.getContent(ITEM_LIST));
+            list.setOrder((PlaylistItem) dragboard.getContent(ITEM_LIST), Boolean.parseBoolean(dragboard.getString()));
             isSuccess = true;
         }
 
@@ -229,7 +246,7 @@ public class PlaylistElement extends Pane {
         if (e.getAcceptedTransferMode() == null) {
             if (dragboard.hasContent(ITEM_LIST)) {
                 clearBlank();
-                list.setOrder((PlaylistItem) dragboard.getContent(ITEM_LIST));
+                list.setOrder((PlaylistItem) dragboard.getContent(ITEM_LIST), Boolean.parseBoolean(dragboard.getString()));
             }
         }
     }
@@ -240,6 +257,15 @@ public class PlaylistElement extends Pane {
     private void onClick(MouseEvent e) {
         list.onClick();
         setSelected(!isSelected);
+    }
+
+    /**
+     * Render order numbers
+     */
+    public void renderOrderNumber(int orderNumber) {
+        final String number = FORMAT.format(orderNumber);
+        this.setWidthText(this.text, number + ". " + data.getDisplayName());
+        this.subText.setLayoutX(this.text.getLayoutX() + FONT_LOADER.computeStringWidth(number, this.text.getFont()) + 7);
     }
 
     /**
@@ -287,6 +313,20 @@ public class PlaylistElement extends Pane {
         } else {
             this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CORNER_RADII, this.getPadding())));
         }
+    }
+
+    /**
+     * Set text according to width
+     */
+    private void setWidthText(Text textArea, String value) {
+        double textWidth = FONT_LOADER.computeStringWidth(value, textArea.getFont());
+
+        while (textWidth > TEXT_WIDTH) {
+            value = value.substring(0, value.length() - 4) + "...";
+            textWidth = FONT_LOADER.computeStringWidth(value, textArea.getFont());
+        }
+
+        textArea.setText(value);
     }
 
     /**

@@ -1,5 +1,8 @@
 package relevant_craft.vento.media_player.manager.directory;
 
+/**
+ * Directories of player
+ */
 public enum Directories {
     PLAYLISTS_DIR("playlists"),
     COVERS_DIR("covers"),

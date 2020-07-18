@@ -5,14 +5,20 @@ import relevant_craft.vento.media_player.gui.main.elements.control.Control;
 import relevant_craft.vento.media_player.gui.main.elements.navigation.Navigation;
 import relevant_craft.vento.media_player.gui.main.elements.navigation.NavigationItem;
 import relevant_craft.vento.media_player.gui.main.elements.playlist.Playlist;
+import relevant_craft.vento.media_player.gui.main.elements.playlist.PlaylistItem;
 import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.gui.main.elements.visualization.Visualization;
 import relevant_craft.vento.media_player.manager.equalizer.EqualizerManager;
 import relevant_craft.vento.media_player.manager.playlist.PlaylistData;
 import relevant_craft.vento.media_player.manager.playlist.PlaylistManager;
 import relevant_craft.vento.media_player.manager.vumeter.VUMeterManager;
+import relevant_craft.vento.media_player.utils.FileUtils;
+import relevant_craft.vento.media_player.utils.SongUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlayerManager {
     private final MainGui mainGui;
@@ -29,6 +35,7 @@ public class PlayerManager {
 
     private double volumeLevel;
     private PlaylistData currentPlaylist;
+    private PlaylistItem currentSong;
 
     /**
      * Init player manager
@@ -46,6 +53,9 @@ public class PlayerManager {
         this.equalizer = new EqualizerManager(visualization.getEqualizer());
         this.playlistManager = new PlaylistManager();
 
+        this.title.getCloseButton().addClickListener(this::onCloseButtonClick);
+        this.title.getMinimizeButton().addClickListener(this::onMinimizeButtonClick);
+
         this.control.getPlayButton().addClickListener(this::onPlayButtonClick);
         this.control.getMuteButton().addClickListener(this::onMuteButtonClick);
         this.control.getSongSlider().addClickListener(this::onSongSliderClick);
@@ -58,13 +68,34 @@ public class PlayerManager {
         this.renderPlaylistNames();
         this.navigation.getLocalPlaylists().addClickListener(this::onPlaylistClick);
 
-        //TODO remove
-        try {
-            playerEngine.loadAudio("C:/Users/VENTO/Downloads/ChipaChip - Веном.mp3");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        this.playlist.getPlaylist().addClickListener(this::onSongClick);
+        this.playlist.getPlaylist().addDropFilesListener(this::onDropFiles);
+        this.playlist.getPlaylist().addChangeOrderListener(this::onChangeOrder);
     }
+
+
+    /******************************************************************************************************************
+        Title events
+     ******************************************************************************************************************/
+
+    /**
+     * Event on close button click
+     */
+    private void onCloseButtonClick() {
+        if (playerEngine.isActive()) {
+            playerEngine.stop();
+        }
+
+        System.exit(0);
+    }
+
+    /**
+     * Event on minimize button click
+     */
+    private void onMinimizeButtonClick() {
+
+    }
+
 
     /******************************************************************************************************************
         Control events
@@ -131,8 +162,8 @@ public class PlayerManager {
      * Event on audio load
      */
     private void onAudioLoad() {
-        control.getSongName().setText(playerEngine.getTitle());
-        control.getArtistName().setText(playerEngine.getAuthor());
+        control.setSongName(playerEngine.getTitle());
+        control.setArtistName(playerEngine.getAuthor());
         control.getSongSlider().setTotalValue(playerEngine.getSecondsTotal());
     }
 
@@ -161,7 +192,13 @@ public class PlayerManager {
      * Load playlist
      */
     private void renderPlaylist() {
-        //TODO render playlist songs
+        playlist.clear();
+
+        for (PlaylistItem song : currentPlaylist.getSongs()) {
+            playlist.add(song);
+        }
+
+        visualization.getPlaylistInfo().setPlaylistInfo(currentPlaylist.getDisplayName(), currentPlaylist.getSongs().size(), currentPlaylist.getTime(), currentPlaylist.getSize());
     }
 
     /**
@@ -175,6 +212,78 @@ public class PlayerManager {
         try {
             currentPlaylist = playlistManager.loadPlaylist(data.getUUID());
             renderPlaylist();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Event on song click
+     */
+    private void onSongClick(PlaylistItem data) {
+        if (currentSong != null && currentSong.getHash().equals(data.getHash())) {
+            return;
+        }
+
+        currentSong = data;
+
+        try {
+            playerEngine.loadAudio(data);
+            playerEngine.play();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Event on drop files in playlist
+     */
+    private void onDropFiles(List<File> files, int index) {
+        List<PlaylistItem> songs = new ArrayList<>();
+
+        //load audio data for each file
+        files = FileUtils.getAllFiles(files);
+        for (File file : files) {
+            try {
+                //load audio data
+                PlaylistItem song = SongUtils.getAudioData(file);
+
+                //check if song already in playlist
+                if (currentPlaylist.getSongByHash(song.getHash()) != null) {
+                    continue;
+                }
+
+                //add song
+                songs.add(song);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        //add songs
+        currentPlaylist.addSongs(songs, index);
+
+        //render
+        renderPlaylist();
+
+        //save
+        try {
+            playlistManager.savePlaylist(currentPlaylist);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Event on change order in playlist
+     */
+    private void onChangeOrder(PlaylistItem data, int index) {
+        //set new position
+        currentPlaylist.setSongOrder(data, index);
+
+        //save
+        try {
+            playlistManager.savePlaylist(currentPlaylist);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -110,4 +110,18 @@ public class Title extends Pane {
         stage.setX(e.getScreenX() + xOffset);
         stage.setY(e.getScreenY() + yOffset);
     }
+
+    /**
+     * Return close button
+     */
+    public TitleButton getCloseButton() {
+        return close;
+    }
+
+    /**
+     * Return minimize button
+     */
+    public TitleButton getMinimizeButton() {
+        return minimize;
+    }
 }

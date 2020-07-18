@@ -25,6 +25,7 @@ public class Playlist extends ScrollPane {
     private final ContentScrollBar scrollBar;
 
     private Pane content;
+    private PlaylistList playlist;
     private ImageView cover;
 
     /**
@@ -66,22 +67,11 @@ public class Playlist extends ScrollPane {
             viewport.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
         });
 
-        //TODO manage content
         content = new VBox();
         content.setPrefWidth(this.getPrefWidth());
         content.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        PlaylistList playlist = new PlaylistList();
-        playlist.addElement(new PlaylistItem("ChipaChip - Глобус (Scratch by DJ Vader One)", 181, "MP3", 44, 320, 7329546));
-        playlist.addElement(new PlaylistItem("ChipaChip - Мороженка (feat. 4SGM, Лёша Свик)", 226, "MP3", 44, 320, 9122611));
-        playlist.addElement(new PlaylistItem("ChipaChip - Минутная лайф", 184, "MP3", 44, 320, 7434403));
-        playlist.addElement(new PlaylistItem("ChipaChip - Флэшбэк", 142, "MP3", 44, 320, 5735710));
-        playlist.addElement(new PlaylistItem("ChipaChip - Монолог", 181, "MP3", 44, 320, 7319060));
-        playlist.addElement(new PlaylistItem("ChipaChip - Репит", 157, "MP3", 44, 320, 6364856));
-        playlist.addElement(new PlaylistItem("ChipaChip - По проводам", 212, "MP3", 44, 320, 8545894));
-        playlist.calculateOrderNumbers();
-
-        content.setPrefHeight(playlist.calculateHeight() + 10);
+        playlist = new PlaylistList();
         content.getChildren().add(playlist);
 
         this.setContent(content);
@@ -112,5 +102,36 @@ public class Playlist extends ScrollPane {
         cover.setOpacity(0.05);
         cover.setDisable(true);
         layout.getChildren().add(0, cover);
+    }
+
+    /**
+     * Calculate playlist height
+     */
+    private void calculateHeight() {
+        content.setPrefHeight(playlist.calculateHeight() + 10);
+        scrollBar.setThumbHeight(content.getPrefHeight());
+    }
+
+    /**
+     * Add element to playlist
+     */
+    public void add(PlaylistItem data) {
+        playlist.addElement(data);
+        playlist.calculateOrderNumbers();
+        calculateHeight();
+    }
+
+    /**
+     * Clear playlist
+     */
+    public void clear() {
+        playlist.clear();
+    }
+
+    /**
+     * Return playlist list
+     */
+    public PlaylistList getPlaylist() {
+        return playlist;
     }
 }

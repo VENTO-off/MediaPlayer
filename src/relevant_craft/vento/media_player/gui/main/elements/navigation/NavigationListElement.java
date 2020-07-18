@@ -1,7 +1,5 @@
 package relevant_craft.vento.media_player.gui.main.elements.navigation;
 
-import com.sun.javafx.tk.FontLoader;
-import com.sun.javafx.tk.Toolkit;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Cursor;
@@ -21,11 +19,11 @@ import javafx.scene.text.Text;
 import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
 import relevant_craft.vento.media_player.manager.picture.PictureManager;
+import relevant_craft.vento.media_player.utils.TextUtils;
 
 public class NavigationListElement extends Pane {
     private static final DataFormat ITEM_LIST = new DataFormat("navigation/item");
     private static final CornerRadii CORNER_RADII = new CornerRadii(3.0, 0, 0, 3.0, false);
-    private static final FontLoader FONT_LOADER = Toolkit.getToolkit().getFontLoader();
     private static final double TEXT_WIDTH = 90;
     private static int lastID = 0;
 
@@ -88,7 +86,7 @@ public class NavigationListElement extends Pane {
 
         //render text
         final double fixY = 11;
-        this.setWidthText(this.text, data.getDisplayName());
+        TextUtils.setWidthText(this.text, data.getDisplayName(), TEXT_WIDTH);
         this.text.setFill(Color.WHITE);
         this.text.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 17));
         this.text.setLayoutX(30);
@@ -289,20 +287,6 @@ public class NavigationListElement extends Pane {
         } else {
             this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CORNER_RADII, this.getPadding())));
         }
-    }
-
-    /**
-     * Set text according to width
-     */
-    private void setWidthText(Text textArea, String value) {
-        double textWidth = FONT_LOADER.computeStringWidth(value, textArea.getFont());
-
-        while (textWidth > TEXT_WIDTH) {
-            value = value.substring(0, value.length() - 4) + "...";
-            textWidth = FONT_LOADER.computeStringWidth(value, textArea.getFont());
-        }
-
-        textArea.setText(value);
     }
 
     /**

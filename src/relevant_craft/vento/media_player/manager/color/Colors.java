@@ -2,6 +2,9 @@ package relevant_craft.vento.media_player.manager.color;
 
 import javafx.scene.paint.Color;
 
+/**
+ * List of all available colors
+ */
 public enum Colors {
     LAYOUT_COLOR("#303030"),
     TITLE_COLOR("#232323"),

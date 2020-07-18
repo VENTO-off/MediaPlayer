@@ -6,9 +6,15 @@ import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
+import java.util.List;
+
 public class PlaylistList extends VBox {
     private int size;
     private int lastDragID;
+    private ClickListener clickListener;
+    private DropFilesListener dropFilesListener;
+    private ChangeOrderListener changeOrderListener;
 
     /**
      * Init music list
@@ -33,11 +39,25 @@ public class PlaylistList extends VBox {
      * Set order of element
      */
     public void setOrder(PlaylistItem data, boolean isSelected) {
+        //notify change order listener
+        if (changeOrderListener != null) {
+            changeOrderListener.onChangeOrder(data, lastDragID);
+        }
+
+        //set order
         Platform.runLater(() -> {
             this.getChildren().add(lastDragID, new PlaylistElement(this, data, isSelected));
             this.calculateOrderNumbers();
             this.lastDragID = -1;
         });
+    }
+
+    /**
+     * Clear all elements
+     */
+    public void clear() {
+        this.getChildren().clear();
+        this.size = 0;
     }
 
     /**
@@ -73,18 +93,33 @@ public class PlaylistList extends VBox {
             }
         }
 
-        return height;
+        return height + PlaylistElement.getElementHeight();
     }
 
     /**
      * Event on mouse click
      */
-    public void onClick() {
+    protected void onClick(PlaylistItem data) {
+        //deselect all
         for (Node node : this.getChildren()) {
             if (node instanceof PlaylistElement) {
                 PlaylistElement element = (PlaylistElement) node;
                 element.setSelected(false);
             }
+        }
+
+        //notify click listener
+        if (clickListener != null) {
+            clickListener.onClick(data);
+        }
+    }
+
+    /**
+     * Event on drop files
+     */
+    protected void onDropFiles(List<File> files, int index) {
+        if (dropFilesListener != null) {
+            dropFilesListener.onDrop(files, index);
         }
     }
 
@@ -99,5 +134,47 @@ public class PlaylistList extends VBox {
                 element.renderOrderNumber(index++);
             }
         }
+    }
+
+    /**
+     * Click listener
+     */
+    public interface ClickListener {
+        void onClick(PlaylistItem data);
+    }
+
+    /**
+     * Add click listener
+     */
+    public void addClickListener(ClickListener clickListener) {
+        this.clickListener = clickListener;
+    }
+
+    /**
+     * Drop files listener
+     */
+    public interface DropFilesListener {
+        void onDrop(List<File> files, int index);
+    }
+
+    /**
+     * Add drop files listener
+     */
+    public void addDropFilesListener(DropFilesListener dropFilesListener) {
+        this.dropFilesListener = dropFilesListener;
+    }
+
+    /**
+     * Change order listener
+     */
+    public interface ChangeOrderListener {
+        void onChangeOrder(PlaylistItem data, int index);
+    }
+
+    /**
+     * Add change order listener
+     */
+    public void addChangeOrderListener(ChangeOrderListener changeOrderListener) {
+        this.changeOrderListener = changeOrderListener;
     }
 }

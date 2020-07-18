@@ -1,5 +1,8 @@
 package relevant_craft.vento.media_player.manager.picture;
 
+/**
+ * List of all available pictures
+ */
 public enum Pictures {
     MINIMIZE_ICON("minimize icon.png"),
     CLOSE_ICON("close_icon.png"),

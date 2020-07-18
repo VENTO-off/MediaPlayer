@@ -20,6 +20,7 @@ import javafx.scene.text.TextAlignment;
 import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
 import relevant_craft.vento.media_player.utils.SizeUtils;
+import relevant_craft.vento.media_player.utils.TextUtils;
 import relevant_craft.vento.media_player.utils.TimeUtils;
 
 import java.text.DecimalFormat;
@@ -30,6 +31,7 @@ public class PlaylistElement extends Pane {
     private static final FontLoader FONT_LOADER = Toolkit.getToolkit().getFontLoader();
     private static final DecimalFormat FORMAT = new DecimalFormat("00");
     private static final double TEXT_WIDTH = 500;
+    private static final double HEIGHT = 38;
     private static int lastID = 0;
 
     private final int id;
@@ -41,6 +43,7 @@ public class PlaylistElement extends Pane {
 
     private boolean isSelected;
     private long lastUpdate;
+    private int orderNumber;
 
     /**
      * Init playlist element
@@ -75,7 +78,7 @@ public class PlaylistElement extends Pane {
      */
     private void initStyle() {
         //init layout
-        this.setPrefHeight(38);
+        this.setPrefHeight(HEIGHT);
         this.setCursor(Cursor.HAND);
         this.setSelected(isSelected);
 
@@ -85,7 +88,7 @@ public class PlaylistElement extends Pane {
 
         //render song name
         final double fixY = 11;
-        this.setWidthText(this.text, data.getDisplayName());
+        TextUtils.setWidthText(this.text, data.getDisplayName(), TEXT_WIDTH);
         this.text.setFill(Color.WHITE);
         this.text.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 15));
         this.text.setLayoutX(10);
@@ -95,7 +98,7 @@ public class PlaylistElement extends Pane {
         this.getChildren().add(this.text);
 
         //render song info
-        this.subText.setText(String.join(" :: ", data.getAudioFormat(), String.join(", ", data.getSamplingRate() + " kHz", + data.getBitRate() + " kbps", SizeUtils.formatSize(data.getSize()))));
+        this.subText.setText(String.join(" :: ", data.getAudioFormat(), String.join(", ", data.getSampleRate() / 1000 + " kHz", + data.getBitRate() / 1000 + " kbps", SizeUtils.formatSize(data.getSize()))));
         this.subText.setFill(Color.web(Color.WHITE.toString(), 0.25));
         this.subText.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 11));
         this.subText.setLayoutX(this.text.getLayoutX());
@@ -104,7 +107,7 @@ public class PlaylistElement extends Pane {
         this.getChildren().add(this.subText);
 
         //render song time
-        this.time.setText(TimeUtils.formatPlaylistTime(data.getTime()));
+        this.time.setText(TimeUtils.formatPlaylistTime(data.getLength()));
         this.time.setWrappingWidth(60);
         this.time.setTextAlignment(TextAlignment.RIGHT);
         this.time.setFill(Color.WHITE);
@@ -141,7 +144,8 @@ public class PlaylistElement extends Pane {
         }
 
         if (index >= list.getSize()) {
-            index = list.getSize() - 1;
+            //if add files => add new blank element
+            index = list.getSize() - (e.getDragboard().hasFiles() ? 0 : 1);
         }
 
         return index;
@@ -206,7 +210,7 @@ public class PlaylistElement extends Pane {
      */
     private void onDragOver(DragEvent e) {
         Dragboard dragboard = e.getDragboard();
-        if (!dragboard.hasContent(ITEM_LIST)) {
+        if (!dragboard.hasContent(ITEM_LIST) && !dragboard.hasFiles()) {
             e.acceptTransferModes(TransferMode.NONE);
             return;
         }
@@ -232,6 +236,10 @@ public class PlaylistElement extends Pane {
             clearBlank();
             list.setOrder((PlaylistItem) dragboard.getContent(ITEM_LIST), Boolean.parseBoolean(dragboard.getString()));
             isSuccess = true;
+        } else if (dragboard.hasFiles()) {
+            clearBlank();
+            list.onDropFiles(dragboard.getFiles(), getIndex(e));
+            isSuccess = true;
         }
 
         e.setDropCompleted(isSuccess);
@@ -255,7 +263,7 @@ public class PlaylistElement extends Pane {
      * Event on mouse click
      */
     private void onClick(MouseEvent e) {
-        list.onClick();
+        list.onClick(data);
         setSelected(!isSelected);
     }
 
@@ -263,8 +271,9 @@ public class PlaylistElement extends Pane {
      * Render order numbers
      */
     public void renderOrderNumber(int orderNumber) {
+        this.orderNumber = orderNumber;
         final String number = FORMAT.format(orderNumber);
-        this.setWidthText(this.text, number + ". " + data.getDisplayName());
+        TextUtils.setWidthText(this.text, number + ". " + data.getDisplayName(), TEXT_WIDTH);
         this.subText.setLayoutX(this.text.getLayoutX() + FONT_LOADER.computeStringWidth(number, this.text.getFont()) + 7);
     }
 
@@ -287,6 +296,13 @@ public class PlaylistElement extends Pane {
      */
     public boolean isSelected() {
         return isSelected;
+    }
+
+    /**
+     * Get height if element
+     */
+    public static double getElementHeight() {
+        return HEIGHT;
     }
 
     /**
@@ -313,20 +329,6 @@ public class PlaylistElement extends Pane {
         } else {
             this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CORNER_RADII, this.getPadding())));
         }
-    }
-
-    /**
-     * Set text according to width
-     */
-    private void setWidthText(Text textArea, String value) {
-        double textWidth = FONT_LOADER.computeStringWidth(value, textArea.getFont());
-
-        while (textWidth > TEXT_WIDTH) {
-            value = value.substring(0, value.length() - 4) + "...";
-            textWidth = FONT_LOADER.computeStringWidth(value, textArea.getFont());
-        }
-
-        textArea.setText(value);
     }
 
     /**

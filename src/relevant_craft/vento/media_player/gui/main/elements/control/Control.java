@@ -14,6 +14,7 @@ import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
 import relevant_craft.vento.media_player.manager.picture.PictureManager;
 import relevant_craft.vento.media_player.manager.picture.Pictures;
+import relevant_craft.vento.media_player.utils.TextUtils;
 
 public class Control extends Pane {
     private static final double height = 70;
@@ -117,8 +118,6 @@ public class Control extends Pane {
         songName.setY(20 + fixY);
         songName.setFill(Color.WHITE);
         songName.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 16));
-        //TODO remove test value
-        songName.setText("По проводам");
         this.getChildren().add(songName);
 
         artistName = new Text();
@@ -126,8 +125,6 @@ public class Control extends Pane {
         artistName.setY(39 + fixY);
         artistName.setFill(Color.WHITE);
         artistName.setFont(FontManager.loadFont(Fonts.SEGOE_UI_BOLD.getFontName(), 13));
-        //TODO remove test value
-        artistName.setText("ChipaChip");
         this.getChildren().add(artistName);
     }
 
@@ -194,15 +191,15 @@ public class Control extends Pane {
     /**
      * Return song name
      */
-    public Text getSongName() {
-        return songName;
+    public void setSongName(String value) {
+        TextUtils.setWidthText(songName, value, 250);
     }
 
     /**
      * Return artist name
      */
-    public Text getArtistName() {
-        return artistName;
+    public void setArtistName(String value) {
+        TextUtils.setWidthText(artistName, value, 140);
     }
 
     /**

@@ -1,14 +1,13 @@
 package relevant_craft.vento.media_player.manager.player;
 
-import org.tritonus.share.sampled.file.TAudioFileFormat;
 import relevant_craft.vento.media_player.gui.main.elements.control.Control;
+import relevant_craft.vento.media_player.gui.main.elements.playlist.PlaylistItem;
 
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
 
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 
@@ -27,15 +26,12 @@ public class PlayerEngine implements Runnable {
     private LoadListener loadListener;
     private SamplesListener samplesListener;
 
+    private PlaylistItem song;
     private File file;
     private AudioInputStream in;
     private long audioLength;
-    private long secondsTotal;
     private long secondsCurrent;
     private long bytesPerSecond;
-    private int bitrate;
-    private String title;
-    private String author;
     private long frameSize;
     private float sampleRate;
     private long readFrames;
@@ -54,12 +50,18 @@ public class PlayerEngine implements Runnable {
     /**
      * Load audio file
      */
-    public void loadAudio(String path) throws FileNotFoundException {
+    public void loadAudio(PlaylistItem data) throws FileNotFoundException {
+        this.song = data;
+
         if (isActive()) {
             stop();
         }
 
-        file = new File(path);
+        if (isPaused) {
+            isPaused = false;
+        }
+
+        file = new File(data.getPath());
         if (!file.exists()) {
             throw new FileNotFoundException();
         }
@@ -73,6 +75,7 @@ public class PlayerEngine implements Runnable {
     @Override
     public void run() {
         isRunning = true;
+        control.getPlayButton().setSelected(true);
 
         //notify time listener
         if (timeListener != null) {
@@ -231,7 +234,7 @@ public class PlayerEngine implements Runnable {
     /**
      * Create decoded audio format
      */
-    private AudioFormat getOutFormat(AudioFormat format) {
+    public static AudioFormat getOutFormat(AudioFormat format) {
         int channels = format.getChannels();
         float rate = format.getSampleRate();
 
@@ -254,7 +257,6 @@ public class PlayerEngine implements Runnable {
     private void loadAudioData() {
         try {
             AudioInputStream in = AudioSystem.getAudioInputStream(file);
-            AudioFormat format = getOutFormat(in.getFormat());
 
             //seconds current
             secondsCurrent = 0;
@@ -262,33 +264,8 @@ public class PlayerEngine implements Runnable {
             //bytes length
             audioLength = in.available();
 
-            //bitrate
-            bitrate = (int) in.getFormat().properties().get("bitrate");
-
-            AudioFileFormat baseFormat = AudioSystem.getAudioFileFormat(file);
-            if (baseFormat instanceof TAudioFileFormat) {
-                Map<?, ?> props = baseFormat.properties();
-
-                //seconds length
-                secondsTotal = ((Long) props.get("duration") / 1000000);
-
-                //title
-                title = (String) props.get("title");
-
-                //author
-                author = (String) props.get("author");
-
-                //TODO image
-            } else {
-                //seconds length
-                secondsTotal = (long) (baseFormat.getFrameLength() / baseFormat.getFormat().getFrameRate());
-
-                //bitrate
-                bitrate = (int) (format.getSampleSizeInBits() * format.getSampleRate() * format.getChannels() / 1000);
-            }
-
             //bytes per second
-            bytesPerSecond = audioLength / secondsTotal;
+            bytesPerSecond = audioLength / song.getLength();
 
             //notify audio loaded listener
             if (loadListener != null) {
@@ -297,7 +274,7 @@ public class PlayerEngine implements Runnable {
 
             in.close();
         } catch (Exception e) {
-            //TODO throw
+            e.printStackTrace();
         }
     }
 
@@ -381,14 +358,14 @@ public class PlayerEngine implements Runnable {
      * Time to percentage
      */
     private double timeToPercentage() {
-        return (double) secondsCurrent / secondsTotal;
+        return (double) secondsCurrent / song.getLength();
     }
 
     /**
      * Percentage to time
      */
     private long percentageToTime(double percentage) {
-        return (long) (percentage * secondsTotal);
+        return (long) (percentage * song.getLength());
     }
 
     /**
@@ -404,7 +381,7 @@ public class PlayerEngine implements Runnable {
      * Return total seconds
      */
     public long getSecondsTotal() {
-        return secondsTotal;
+        return song.getLength();
     }
 
     /**
@@ -418,21 +395,21 @@ public class PlayerEngine implements Runnable {
      * Return audio bitrate
      */
     public int getBitrate() {
-        return bitrate;
+        return song.getBitRate();
     }
 
     /**
      * Return title of song
      */
     public String getTitle() {
-        return title;
+        return song.getTitle();
     }
 
     /**
      * Return author of song
      */
     public String getAuthor() {
-        return author;
+        return song.getArtist();
     }
 
     /**

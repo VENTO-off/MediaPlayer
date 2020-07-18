@@ -10,20 +10,32 @@ public class NavigationItem implements Serializable {
     private final String displayName;
     private final UUID uuid;
 
+    /**
+     * Init navigation item
+     */
     public NavigationItem(Pictures icon, String displayName, UUID uuid) {
         this.icon = icon;
         this.displayName = displayName;
         this.uuid = uuid;
     }
 
+    /**
+     * Return icon
+     */
     public Pictures getIcon() {
         return icon;
     }
 
+    /**
+     * Return display name
+     */
     public String getDisplayName() {
         return displayName;
     }
 
+    /**
+     * Return UUID
+     */
     public UUID getUUID() {
         return uuid;
     }

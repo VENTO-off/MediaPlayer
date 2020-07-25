@@ -26,6 +26,6 @@ public class PlaylistInfo extends Text {
      * Set playlist info
      */
     public void setPlaylistInfo(String name, int songs, long time, long size) {
-        this.setText(String.join(" / ", name, String.valueOf(songs), TimeUtils.formatPlaylistInfoTime(time), SizeUtils.formatSize(size)));
+        this.setText(String.join(" / ", name, songs + " треков ", TimeUtils.formatPlaylistInfoTime(time), SizeUtils.formatSize(size)));
     }
 }

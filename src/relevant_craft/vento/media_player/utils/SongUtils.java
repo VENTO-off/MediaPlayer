@@ -24,6 +24,7 @@ public class SongUtils {
         int sampleRate;
         long length;
         long size = file.length();
+        String audioFormat;
         String hash = HashUtils.md5(file.getAbsolutePath());
 
         AudioInputStream in = AudioSystem.getAudioInputStream(file);
@@ -33,6 +34,10 @@ public class SongUtils {
         sampleRate = (int) in.getFormat().getSampleRate();
 
         AudioFileFormat baseFormat = AudioSystem.getAudioFileFormat(file);
+
+        //audio format
+        audioFormat = baseFormat.getType().getExtension();
+
         if (baseFormat instanceof TAudioFileFormat) {
             Map<?, ?> props = baseFormat.properties();
 
@@ -63,6 +68,7 @@ public class SongUtils {
 
         in.close();
 
+        //parse title from file name
         if (title == null) {
             String fileName = file.getName();
             int extensionIndex = fileName.lastIndexOf(".");
@@ -80,7 +86,15 @@ public class SongUtils {
             }
         }
 
-        return new PlaylistItem(path, title, artist, bitRate, sampleRate, length, size, hash);
+        //trim title and artist
+        if (title != null && !title.isEmpty()) {
+            title = title.trim();
+        }
+        if (artist != null && !artist.isEmpty()) {
+            artist = artist.trim();
+        }
+
+        return new PlaylistItem(path, title, artist, bitRate, sampleRate, length, size, audioFormat, hash);
     }
 
 }

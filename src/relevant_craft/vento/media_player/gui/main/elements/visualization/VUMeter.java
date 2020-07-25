@@ -12,6 +12,7 @@ public class VUMeter extends Pane {
 
     private final ImageView background;
     private final Line arrow;
+    private final ImageView layer;
     private final Rotate angle;
 
     private final int[][] dbLevels = new int[][] {
@@ -21,12 +22,12 @@ public class VUMeter extends Pane {
             {-7,    23},
             {-5,    32},
             {-3,    45},
-            {-2,    51},
-            {-1,    58},
+            {-2,    52},
+            {-1,    59},
             { 0,    71},
             {+1,    81},
             {+2,    91},
-            {+3,    104}
+            {+3,    102}
     };
 
     /**
@@ -53,6 +54,13 @@ public class VUMeter extends Pane {
         this.arrow.setEndX(27);
         this.arrow.setEndY(36);
         this.getChildren().add(this.arrow);
+
+        //render layer
+        this.layer = new ImageView();
+        this.layer.setImage(PictureManager.loadImage(Pictures.VU_METER_LAYER.getIconName()));
+        this.layer.setLayoutX(this.getPrefWidth() / 2 - this.layer.getImage().getWidth() / 2);
+        this.layer.setLayoutY(this.getPrefHeight() - this.layer.getImage().getHeight());
+        this.getChildren().add(this.layer);
 
         //init angle
         this.angle = new Rotate();

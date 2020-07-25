@@ -10,12 +10,13 @@ public class PlaylistItem implements Serializable {
     private final int sampleRate;
     private final long length;
     private final long size;
+    private final String audioFormat;
     private final String hash;
 
     /**
      * Init playlist item (song)
      */
-    public PlaylistItem(String path, String title, String artist, int bitRate, int sampleRate, long length, long size, String hash) {
+    public PlaylistItem(String path, String title, String artist, int bitRate, int sampleRate, long length, long size, String audioFormat, String hash) {
         this.path = path;
         this.title = title;
         this.artist = artist;
@@ -23,6 +24,7 @@ public class PlaylistItem implements Serializable {
         this.sampleRate = sampleRate;
         this.length = length;
         this.size = size;
+        this.audioFormat = audioFormat;
         this.hash = hash;
     }
 
@@ -76,13 +78,6 @@ public class PlaylistItem implements Serializable {
     }
 
     /**
-     * Return md5 hash of file
-     */
-    public String getHash() {
-        return hash;
-    }
-
-    /**
      * Return display name of song
      */
     public String getDisplayName() {
@@ -97,11 +92,13 @@ public class PlaylistItem implements Serializable {
      * Return audio format of song
      */
     public String getAudioFormat() {
-        int extensionIndex = path.lastIndexOf(".");
-        if (extensionIndex == -1) {
-            return "none".toUpperCase();
-        }
+        return audioFormat;
+    }
 
-        return path.substring(extensionIndex + 1).toUpperCase();
+    /**
+     * Return md5 hash of song
+     */
+    public String getHash() {
+        return hash;
     }
 }

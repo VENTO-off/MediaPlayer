@@ -98,7 +98,7 @@ public class PlaylistElement extends Pane {
         this.getChildren().add(this.text);
 
         //render song info
-        this.subText.setText(String.join(" :: ", data.getAudioFormat(), String.join(", ", data.getSampleRate() / 1000 + " kHz", + data.getBitRate() / 1000 + " kbps", SizeUtils.formatSize(data.getSize()))));
+        this.subText.setText(String.join(" :: ", data.getAudioFormat().toUpperCase(), String.join(", ", data.getSampleRate() / 1000 + " kHz", + data.getBitRate() / 1000 + " kbps", SizeUtils.formatSize(data.getSize()))));
         this.subText.setFill(Color.web(Color.WHITE.toString(), 0.25));
         this.subText.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 11));
         this.subText.setLayoutX(this.text.getLayoutX());

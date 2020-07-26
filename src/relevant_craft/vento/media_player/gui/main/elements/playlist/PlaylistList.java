@@ -5,11 +5,14 @@ import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import relevant_craft.vento.media_player.manager.color.ColorManager;
 
 import java.io.File;
 import java.util.List;
 
 public class PlaylistList extends VBox {
+    private final ColorManager colorManager;
+
     private int size;
     private int lastDragID;
     private ClickListener clickListener;
@@ -21,6 +24,8 @@ public class PlaylistList extends VBox {
      */
     public PlaylistList() {
         super();
+        this.colorManager = ColorManager.getInstance();
+
         this.size = 0;
         this.lastDragID = -1;
 
@@ -99,7 +104,7 @@ public class PlaylistList extends VBox {
     /**
      * Event on mouse click
      */
-    protected void onClick(PlaylistItem data) {
+    protected void onClick(PlaylistItem data, int index) {
         //deselect all
         for (Node node : this.getChildren()) {
             if (node instanceof PlaylistElement) {
@@ -110,7 +115,7 @@ public class PlaylistList extends VBox {
 
         //notify click listener
         if (clickListener != null) {
-            clickListener.onClick(data);
+            clickListener.onClick(data, index);
         }
     }
 
@@ -140,7 +145,7 @@ public class PlaylistList extends VBox {
      * Click listener
      */
     public interface ClickListener {
-        void onClick(PlaylistItem data);
+        void onClick(PlaylistItem data, int index);
     }
 
     /**
@@ -176,5 +181,12 @@ public class PlaylistList extends VBox {
      */
     public void addChangeOrderListener(ChangeOrderListener changeOrderListener) {
         this.changeOrderListener = changeOrderListener;
+    }
+
+    /**
+     * Return color manager
+     */
+    public ColorManager getColorManager() {
+        return colorManager;
     }
 }

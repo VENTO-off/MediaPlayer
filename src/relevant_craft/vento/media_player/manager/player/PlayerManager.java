@@ -8,6 +8,7 @@ import relevant_craft.vento.media_player.gui.main.elements.playlist.Playlist;
 import relevant_craft.vento.media_player.gui.main.elements.playlist.PlaylistItem;
 import relevant_craft.vento.media_player.gui.main.elements.title.Title;
 import relevant_craft.vento.media_player.gui.main.elements.visualization.Visualization;
+import relevant_craft.vento.media_player.manager.color.ColorManager;
 import relevant_craft.vento.media_player.manager.equalizer.EqualizerManager;
 import relevant_craft.vento.media_player.manager.playlist.PlaylistData;
 import relevant_craft.vento.media_player.manager.playlist.PlaylistManager;
@@ -32,10 +33,12 @@ public class PlayerManager {
     private final VUMeterManager rightVU;
     private final EqualizerManager equalizer;
     private final PlaylistManager playlistManager;
+    private final ColorManager colorManager;
 
     private double volumeLevel;
     private PlaylistData currentPlaylist;
     private PlaylistItem currentSong;
+    private long lastSongClick;
 
     /**
      * Init player manager
@@ -52,6 +55,8 @@ public class PlayerManager {
         this.rightVU = new VUMeterManager(visualization.getRightVU());
         this.equalizer = new EqualizerManager(visualization.getEqualizer());
         this.playlistManager = new PlaylistManager();
+        this.colorManager = ColorManager.getInstance();
+        this.lastSongClick = System.currentTimeMillis();
 
         this.title.getCloseButton().addClickListener(this::onCloseButtonClick);
         this.title.getMinimizeButton().addClickListener(this::onMinimizeButtonClick);
@@ -205,10 +210,12 @@ public class PlayerManager {
      * Event on playlist click
      */
     private void onPlaylistClick(NavigationItem data) {
+        //do nothing if clicked current playlist
         if (currentPlaylist != null && currentPlaylist.getUUID().equals(data.getUUID())) {
             return;
         }
 
+        //load and render playlist
         try {
             currentPlaylist = playlistManager.loadPlaylist(data.getUUID());
             renderPlaylist();
@@ -220,13 +227,25 @@ public class PlayerManager {
     /**
      * Event on song click
      */
-    private void onSongClick(PlaylistItem data) {
+    private void onSongClick(PlaylistItem data, int index) {
+        //do nothing if clicked current song
         if (currentSong != null && currentSong.getHash().equals(data.getHash())) {
             return;
         }
 
+        //fix frequent clicks
+        if (System.currentTimeMillis() - lastSongClick <= 250) {
+            return;
+        }
+        lastSongClick = System.currentTimeMillis();
+
+        //set current song
         currentSong = data;
 
+        //set new color
+        colorManager.setColor(index, null);
+
+        //load and play song
         try {
             playerEngine.loadAudio(data);
             playerEngine.play();

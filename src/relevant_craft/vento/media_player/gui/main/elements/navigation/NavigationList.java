@@ -6,6 +6,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
+import relevant_craft.vento.media_player.manager.color.ColorManager;
 import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
 
@@ -13,6 +14,7 @@ public class NavigationList extends VBox {
     private int size;
     private int lastDragID;
     private ClickListener clickListener;
+    private ColorManager colorManager;
 
     /**
      * Init navigation list
@@ -21,6 +23,7 @@ public class NavigationList extends VBox {
         super();
         this.size = 0;
         this.lastDragID = -1;
+        this.colorManager = ColorManager.getInstance();
 
         this.setPadding(new Insets(0, 0, 0, 10.0));
         this.setHeader(header);
@@ -134,5 +137,12 @@ public class NavigationList extends VBox {
      */
     public void addClickListener(ClickListener clickListener) {
         this.clickListener = clickListener;
+    }
+
+    /**
+     * Return color manager
+     */
+    public ColorManager getColorManager() {
+        return colorManager;
     }
 }

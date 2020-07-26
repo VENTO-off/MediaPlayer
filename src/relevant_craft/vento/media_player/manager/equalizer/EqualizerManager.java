@@ -14,6 +14,8 @@ public class EqualizerManager {
     private final double[] bandBuffer;
     private final double[] decreaseBuffer;
     private final double[] audioBandBuffer;
+//    private final double[] flowBuffer;
+//    private final double[] audioFlowBuffer;
 
     private FFTFactory.JavaFFT fft;
     private long lastUpdate;
@@ -27,6 +29,8 @@ public class EqualizerManager {
         this.bandBuffer = new double[BANDS];
         this.decreaseBuffer = new double[BANDS];
         this.audioBandBuffer = new double[BANDS];
+//        this.flowBuffer = new double[BANDS];
+//        this.audioFlowBuffer = new double[BANDS];
         this.lastUpdate = System.currentTimeMillis();
 
         this.initEqualizerLevelChecker();
@@ -94,6 +98,13 @@ public class EqualizerManager {
                 bandBuffer[i] -= decreaseBuffer[i];
             }
 
+//            //compare with buffer flow trails
+//            if (bandBuffer[i] > flowBuffer[i]) {
+//                flowBuffer[i] = bandBuffer[i];
+//            } else {
+//                flowBuffer[i] -= decreaseBuffer[i] * 0.3;                //decrease speed
+//            }
+
             //update highest bands
             if (frequencyBand[i] > frequencyBandHighest[i]) {
                 frequencyBandHighest[i] = frequencyBand[i];
@@ -102,8 +113,12 @@ public class EqualizerManager {
             //create audio bands
             audioBandBuffer[i] = bandBuffer[i] / frequencyBandHighest[i];
 
+//            //create flow trails
+//            audioFlowBuffer[i] = flowBuffer[i] / frequencyBandHighest[i];
+
             //render
             equalizer.setBandLevel(i, audioBandBuffer[i]);
+//            equalizer.setFlowTrailLevel(i, audioFlowBuffer[i]);
             lastUpdate = System.currentTimeMillis();
         }
     }
@@ -144,6 +159,15 @@ public class EqualizerManager {
                             Platform.runLater(() -> equalizer.setBandLevel(band, 0));
                         }
                     }
+
+//                    //trails
+//                    for (int i = 0; i < audioFlowBuffer.length; i++) {
+//                        if (audioFlowBuffer[i] > 0.0) {
+//                            audioFlowBuffer[i] = 0.0;
+//                            final int band = i;
+//                            Platform.runLater(() -> equalizer.setFlowTrailLevel(band, audioFlowBuffer[band]));
+//                        }
+//                    }
                 }
 
                 try {

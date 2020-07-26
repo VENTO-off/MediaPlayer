@@ -63,6 +63,7 @@ public class PlaylistElement extends Pane {
         this.time = new Text();
         this.isSelected = isSelected;
         this.lastUpdate = System.currentTimeMillis();
+        this.list.getColorManager().addChangeColorListener(this::onChangeColor);
 
         this.initStyle();
 
@@ -193,6 +194,10 @@ public class PlaylistElement extends Pane {
 
         Dragboard dragboard = startDragAndDrop(TransferMode.MOVE);
 
+        if (data == null) {
+            return;
+        }
+
         ClipboardContent content = new ClipboardContent();
         content.put(ITEM_LIST, data);
         content.putString(String.valueOf(isSelected));
@@ -263,7 +268,7 @@ public class PlaylistElement extends Pane {
      * Event on mouse click
      */
     private void onClick(MouseEvent e) {
-        list.onClick(data);
+        list.onClick(data, orderNumber);
         setSelected(!isSelected);
     }
 
@@ -271,6 +276,10 @@ public class PlaylistElement extends Pane {
      * Render order numbers
      */
     public void renderOrderNumber(int orderNumber) {
+        if (this.text == null || data == null) {
+            return;
+        }
+
         this.orderNumber = orderNumber;
         final String number = FORMAT.format(orderNumber);
         TextUtils.setWidthText(this.text, number + ". " + data.getDisplayName(), TEXT_WIDTH);
@@ -311,24 +320,39 @@ public class PlaylistElement extends Pane {
     public void setSelected(boolean selected) {
         isSelected = selected;
 
-        //TODO pass average color
-        final String averageColor = "#6b80c1";
-
         if (isSelected) {
-            LinearGradient gradient = new LinearGradient(
-                    0,
-                    0,
-                    1,
-                    0,
-                    true,
-                    CycleMethod.NO_CYCLE,
-                    new Stop(0, Color.web(averageColor, 0.5)),
-                    new Stop(1, Color.TRANSPARENT)
-            );
-            this.setBackground(new Background(new BackgroundFill(gradient, CORNER_RADII, this.getPadding())));
+            updateColor(list.getColorManager().getFinalColor());
         } else {
             this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CORNER_RADII, this.getPadding())));
         }
+    }
+
+    /**
+     * Set background color
+     */
+    private void updateColor(Color color) {
+        LinearGradient gradient = new LinearGradient(
+                0,
+                0,
+                1,
+                0,
+                true,
+                CycleMethod.NO_CYCLE,
+                new Stop(0, Color.color(color.getRed(), color.getGreen(), color.getBlue(), 0.5)),
+                new Stop(1, Color.TRANSPARENT)
+        );
+        this.setBackground(new Background(new BackgroundFill(gradient, CORNER_RADII, this.getPadding())));
+    }
+
+    /**
+     * Event on change color
+     */
+    private void onChangeColor(Color color) {
+        if (!isSelected) {
+            return;
+        }
+
+        updateColor(color);
     }
 
     /**

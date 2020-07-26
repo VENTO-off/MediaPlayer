@@ -53,6 +53,7 @@ public class NavigationListElement extends Pane {
         this.text = new Text();
         this.isSelected = isSelected;
         this.lastUpdate = System.currentTimeMillis();
+        this.list.getColorManager().addChangeColorListener(this::onChangeColor);
 
         this.initStyle();
 
@@ -269,24 +270,39 @@ public class NavigationListElement extends Pane {
     public void setSelected(boolean selected) {
         isSelected = selected;
 
-        //TODO pass average color
-        final String averageColor = "#6b80c1";
-
         if (isSelected) {
-            LinearGradient gradient = new LinearGradient(
-                    0,
-                    0,
-                    1,
-                    0,
-                    true,
-                    CycleMethod.NO_CYCLE,
-                    new Stop(0, Color.web(averageColor)),
-                    new Stop(1, Color.TRANSPARENT)
-            );
-            this.setBackground(new Background(new BackgroundFill(gradient, CORNER_RADII, this.getPadding())));
+            updateColor(list.getColorManager().getFinalColor());
         } else {
             this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CORNER_RADII, this.getPadding())));
         }
+    }
+
+    /**
+     * Set background color
+     */
+    private void updateColor(Color color) {
+        LinearGradient gradient = new LinearGradient(
+                0,
+                0,
+                1,
+                0,
+                true,
+                CycleMethod.NO_CYCLE,
+                new Stop(0, color),
+                new Stop(1, Color.TRANSPARENT)
+        );
+        this.setBackground(new Background(new BackgroundFill(gradient, CORNER_RADII, this.getPadding())));
+    }
+
+    /**
+     * Event on change color
+     */
+    private void onChangeColor(Color color) {
+        if (!isSelected) {
+            return;
+        }
+        
+        updateColor(color);
     }
 
     /**

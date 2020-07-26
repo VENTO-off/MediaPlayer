@@ -9,6 +9,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
+import relevant_craft.vento.media_player.manager.color.ColorManager;
 import relevant_craft.vento.media_player.manager.color.Colors;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class EqualizerBand extends Pane {
     private static final int HEIGHT = 85;
     private static final int TRAILS = 28;
 
+    private final ColorManager colorManager;
     private final List<EqualizerBandTrail> trails;
     private final EqualizerBandTrail flowTrail;
 
@@ -28,8 +30,9 @@ public class EqualizerBand extends Pane {
     public EqualizerBand(double positionX) {
         super();
 
+        this.colorManager = ColorManager.getInstance();
         this.trails = new ArrayList<>();
-        this.flowTrail = new EqualizerBandTrail(HEIGHT);
+        this.flowTrail = new EqualizerBandTrail(HEIGHT, this.colorManager);
 
         //init layout
         this.setPrefWidth(WIDTH);
@@ -51,14 +54,14 @@ public class EqualizerBand extends Pane {
 
         //init trails
         for (int i = 0; i < TRAILS; i++) {
-            EqualizerBandTrail trail = new EqualizerBandTrail(HEIGHT - i * 3);
+            EqualizerBandTrail trail = new EqualizerBandTrail(HEIGHT - i * 3, colorManager);
             this.trails.add(trail);
             this.getChildren().add(trail);
         }
 
-        //init flow trail
-        this.flowTrail.setActive(true);
-        this.getChildren().add(this.flowTrail);
+//        //init flow trail
+//        this.flowTrail.setActive(true);
+//        this.getChildren().add(this.flowTrail);
 
         //default percentage
         this.setPercentage(0.0);

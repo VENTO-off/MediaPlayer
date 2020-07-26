@@ -9,6 +9,7 @@ import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.text.Text;
+import relevant_craft.vento.media_player.manager.color.ColorManager;
 import relevant_craft.vento.media_player.manager.color.Colors;
 import relevant_craft.vento.media_player.manager.font.FontManager;
 import relevant_craft.vento.media_player.manager.font.Fonts;
@@ -20,6 +21,7 @@ public class Control extends Pane {
     private static final double height = 70;
 
     private final AnchorPane layout;
+    private final ColorManager colorManager;
 
     private ControlSlider songSlider;
     private ControlSlider volumeSlider;
@@ -40,6 +42,8 @@ public class Control extends Pane {
         super();
 
         this.layout = layout;
+        this.colorManager = ColorManager.getInstance();
+        this.colorManager.addChangeColorListener(this::onChangeColor);
 
         this.initControl();
         this.initSongSlider();
@@ -55,10 +59,20 @@ public class Control extends Pane {
      * Init control layout
      */
     private void initControl() {
-        //TODO pass average color
-        final String averageColor = "#6b80c1";
-
         this.setPrefSize(layout.getPrefWidth(), height);
+        this.setLayoutY(layout.getPrefHeight() - this.getPrefHeight());
+        this.updateColor(colorManager.getFinalColor());
+
+        DropShadow shadow = new DropShadow(10, Color.web(Color.BLACK.toString(), 0.3));
+        shadow.setWidth(0);
+        shadow.setOffsetY(shadow.getRadius() * -1);
+        this.setEffect(shadow);
+    }
+
+    /**
+     * Set background color
+     */
+    private void updateColor(Color color) {
         LinearGradient gradient = new LinearGradient(
                 0,
                 0,
@@ -66,16 +80,10 @@ public class Control extends Pane {
                 0,
                 true,
                 CycleMethod.NO_CYCLE,
-                new Stop(0, Color.web(averageColor)),
+                new Stop(0, color),
                 new Stop(1, Colors.LAYOUT_COLOR.getColor())
         );
         this.setBackground(new Background(new BackgroundFill(gradient, new CornerRadii(0, 0, 5, 5, false), Insets.EMPTY)));
-        this.setLayoutY(layout.getPrefHeight() - this.getPrefHeight());
-
-        DropShadow shadow = new DropShadow(10, Color.web(Color.BLACK.toString(), 0.3));
-        shadow.setWidth(0);
-        shadow.setOffsetY(shadow.getRadius() * -1);
-        this.setEffect(shadow);
     }
 
     /**
@@ -165,6 +173,13 @@ public class Control extends Pane {
                 Pictures.VOLUME_ICON,
                 Pictures.MUTE_ICON);
         this.getChildren().add(muteButton);
+    }
+
+    /**
+     * Event on change color
+     */
+    private void onChangeColor(Color color) {
+        updateColor(color);
     }
 
     /**

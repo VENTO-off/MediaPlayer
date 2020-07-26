@@ -75,6 +75,7 @@ public class PlayerEngine implements Runnable {
     @Override
     public void run() {
         isRunning = true;
+        isPaused = false;
         control.getPlayButton().setSelected(true);
 
         //notify time listener

@@ -39,6 +39,7 @@ public class PlayerManager {
     private double volumeLevel;
     private PlaylistData currentPlaylist;
     private Thread playlistLoader;
+    private Thread wait;
     private PlaylistItem currentSong;
     private long lastSongClick;
 
@@ -73,6 +74,7 @@ public class PlayerManager {
         this.playerEngine.addTimeListener(this::onTimeUpdate);
         this.playerEngine.addLoadListener(this::onAudioLoad);
         this.playerEngine.addSamplesListener(this::onSamplesUpdate);
+        this.playerEngine.addSongFinishListener(this::onSongFinish);
 
         this.renderPlaylistNames();
         this.navigation.getLocalPlaylists().addClickListener(this::onPlaylistClick);
@@ -207,6 +209,13 @@ public class PlayerManager {
         rightVU.setLevel(rightSamples);
     }
 
+    /**
+     * Event on song finish
+     */
+    private void onSongFinish() {
+        loadNextSong(true);
+    }
+
 
     /******************************************************************************************************************
         Playlist events and methods
@@ -226,14 +235,14 @@ public class PlayerManager {
         //set new color
         colorManager.setColor(currentPlaylist.getSongs().indexOf(currentSong) + 1, null);
 
+        //select song
+        playlist.selectElement(currentSong, false);
+
         //load song
         playerEngine.loadAudio(currentSong);
 
         //play song
         playerEngine.play();
-
-        //select song
-        playlist.selectElement(currentSong, false);
     }
 
     /**
@@ -256,8 +265,26 @@ public class PlayerManager {
             loadSong();
         } catch (FileNotFoundException e) {
             System.err.println("Error loading audio \"" + currentSong.getPath() + "\"!");
-            loadNextSong(isNext);
+            waitAndLoadNextSong(isNext);
         }
+    }
+
+    /**
+     * Wait and load next/previous song
+     */
+    private void waitAndLoadNextSong(boolean isNext) {
+        if (wait != null && wait.isAlive()) {
+            wait.stop();
+        }
+
+        wait = new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignored) {}
+
+            Platform.runLater(() -> loadNextSong(isNext));
+        });
+        wait.start();
     }
 
     /**
@@ -324,7 +351,7 @@ public class PlayerManager {
         }
 
         //fix frequent clicks
-        if (System.currentTimeMillis() - lastSongClick <= 250) {
+        if (System.currentTimeMillis() - lastSongClick <= 500) {
             return;
         }
         lastSongClick = System.currentTimeMillis();
@@ -337,7 +364,7 @@ public class PlayerManager {
             loadSong();
         } catch (FileNotFoundException e) {
             System.err.println("Error loading audio \"" + currentSong.getPath() + "\"!");
-            loadNextSong(true);
+            waitAndLoadNextSong(true);
         }
     }
 
@@ -353,14 +380,14 @@ public class PlayerManager {
             //show loader
             Platform.runLater(() -> {
                 playlist.showLoader();
-                playlist.setLoaderText("Обработка треков");
+                playlist.setLoaderText("Обработка файлов");
             });
 
             //load audio data for each file
             final List<File> allFiles = FileUtils.getAllFiles(files);
 
             //update loader text
-            Platform.runLater(() -> playlist.setLoaderText("Обработка треков (" + songs.size() + "/" + allFiles.size() + ")"));
+            Platform.runLater(() -> playlist.setLoaderText("Обработка файлов (" + songs.size() + "/" + allFiles.size() + ")"));
 
             //process each file
             for (File file : allFiles) {
@@ -377,7 +404,7 @@ public class PlayerManager {
                     songs.add(song);
 
                     //update loader text
-                    Platform.runLater(() -> playlist.setLoaderText("Обработка треков (" + songs.size() + "/" + allFiles.size() + ")"));
+                    Platform.runLater(() -> playlist.setLoaderText("Обработка файлов (" + songs.size() + "/" + allFiles.size() + ")"));
                 } catch (Exception e) {
                     System.err.println("File \"" + file.getName() + "\" isn't an audio file!");
                 }

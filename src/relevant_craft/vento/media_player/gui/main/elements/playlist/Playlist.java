@@ -3,6 +3,7 @@ package relevant_craft.vento.media_player.gui.main.elements.playlist;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -123,6 +124,7 @@ public class Playlist extends ScrollPane {
      */
     public void showLoader() {
         loader.show();
+        playlist.setEffect(new GaussianBlur());
     }
 
     /**
@@ -130,6 +132,7 @@ public class Playlist extends ScrollPane {
      */
     public void hideLoader() {
         loader.hide();
+        playlist.setEffect(null);
     }
 
     /**
@@ -174,7 +177,7 @@ public class Playlist extends ScrollPane {
                 calculateHeight();
 
                 //hide loader
-                loader.hide();
+                hideLoader();
             });
 
             sleep(20);

@@ -25,6 +25,7 @@ public class PlayerEngine implements Runnable {
     private TimeListener timeListener;
     private LoadListener loadListener;
     private SamplesListener samplesListener;
+    private FinishListener finishListener;
 
     private PlaylistItem song;
     private File file;
@@ -105,7 +106,6 @@ public class PlayerEngine implements Runnable {
                     line.stop();
                 }
             }
-
         } catch (UnsupportedAudioFileException e) {
             e.printStackTrace();
         } catch (LineUnavailableException e) {
@@ -116,6 +116,12 @@ public class PlayerEngine implements Runnable {
             try {
                 in.close();
             } catch (Exception ignored) {}
+
+            //notify finish listener
+            if (finishListener != null && isRunning) {
+                player.interrupt();
+                finishListener.onSongFinish();
+            }
         }
     }
 
@@ -353,6 +359,20 @@ public class PlayerEngine implements Runnable {
      */
     public void addSamplesListener(SamplesListener samplesListener) {
         this.samplesListener = samplesListener;
+    }
+
+    /**
+     * Finish listener
+     */
+    public interface FinishListener {
+        void onSongFinish();
+    }
+
+    /**
+     * Add song finish listener
+     */
+    public void addSongFinishListener(FinishListener finishListener) {
+        this.finishListener = finishListener;
     }
 
     /**

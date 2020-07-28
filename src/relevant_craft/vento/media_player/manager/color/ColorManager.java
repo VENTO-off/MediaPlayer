@@ -75,9 +75,7 @@ public class ColorManager {
                 currentColor = Color.rgb(red, green, blue);
                 notifyChangeColorListener();
 
-                try {
-                    Thread.sleep(3);
-                } catch (InterruptedException ignored) {}
+                sleep(3);
             }
         });
         animation.start();
@@ -91,7 +89,14 @@ public class ColorManager {
     }
 
     /**
-     * Get final color
+     * Return current color
+     */
+    public Color getCurrentColor() {
+        return currentColor;
+    }
+
+    /**
+     * Return final color
      */
     public Color getFinalColor() {
         return finalColor;
@@ -124,8 +129,13 @@ public class ColorManager {
         }
     }
 
-    public boolean isActive() {
-        return animation != null && animation.isAlive();
+    /**
+     * Sleep thread
+     */
+    private void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (Exception ignored) {}
     }
 
     /**

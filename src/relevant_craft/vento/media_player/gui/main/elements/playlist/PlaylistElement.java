@@ -269,7 +269,7 @@ public class PlaylistElement extends Pane {
      */
     private void onClick(MouseEvent e) {
         list.onClick(data, orderNumber);
-        setSelected(!isSelected);
+        setSelected(true);
     }
 
     /**

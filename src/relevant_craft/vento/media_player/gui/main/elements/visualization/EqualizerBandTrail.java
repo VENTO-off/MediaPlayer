@@ -12,7 +12,6 @@ public class EqualizerBandTrail extends Pane {
     private final ColorManager colorManager;
 
     private boolean isActivated;
-    private Color currentColor;
 
     /**
      * Init equalizer band trail
@@ -21,10 +20,8 @@ public class EqualizerBandTrail extends Pane {
         super();
 
         this.colorManager = colorManager;
-        this.colorManager.addChangeColorListener(this::onChangeColor);
 
         this.isActivated = false;
-        this.currentColor = colorManager.getFinalColor();
 
         this.setPrefSize(4, 2);
         this.setLayoutY(positionY);
@@ -38,7 +35,7 @@ public class EqualizerBandTrail extends Pane {
         isActivated = status;
 
         if (isActivated) {
-            updateColor(currentColor);
+            updateColor(colorManager.getCurrentColor());
         } else {
             this.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
         }
@@ -56,12 +53,5 @@ public class EqualizerBandTrail extends Pane {
      */
     public void setPositionY(double positionY) {
         this.setLayoutY(positionY);
-    }
-
-    /**
-     * Event on change color
-     */
-    private void onChangeColor(Color color) {
-        currentColor = color;
     }
 }

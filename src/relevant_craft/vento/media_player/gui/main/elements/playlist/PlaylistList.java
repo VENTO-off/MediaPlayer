@@ -8,6 +8,7 @@ import javafx.scene.layout.VBox;
 import relevant_craft.vento.media_player.manager.color.ColorManager;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlaylistList extends VBox {
@@ -38,6 +39,21 @@ public class PlaylistList extends VBox {
     public void addElement(PlaylistItem data) {
         this.getChildren().add(new PlaylistElement(this, data));
         size++;
+    }
+
+    /**
+     * Add list of elements to the end of list (starts in thread)
+     */
+    public void addAllElements(List<PlaylistItem> data) {
+        //render playlist elements
+        List<PlaylistElement> rendered = new ArrayList<>();
+        for (PlaylistItem item : data) {
+            rendered.add(new PlaylistElement(this, item));
+        }
+        size = rendered.size();
+
+        //add to playlist
+        Platform.runLater(() -> this.getChildren().addAll(rendered));
     }
 
     /**
@@ -106,12 +122,7 @@ public class PlaylistList extends VBox {
      */
     protected void onClick(PlaylistItem data, int index) {
         //deselect all
-        for (Node node : this.getChildren()) {
-            if (node instanceof PlaylistElement) {
-                PlaylistElement element = (PlaylistElement) node;
-                element.setSelected(false);
-            }
-        }
+        deselectAllElements();
 
         //notify click listener
         if (clickListener != null) {
@@ -137,6 +148,46 @@ public class PlaylistList extends VBox {
             if (node instanceof PlaylistElement) {
                 PlaylistElement element = (PlaylistElement) node;
                 element.renderOrderNumber(index++);
+            }
+        }
+    }
+
+    /**
+     * Select element
+     */
+    public int selectElement(PlaylistItem item) {
+        if (item == null) {
+            return 0;
+        }
+
+        //deselect all
+        deselectAllElements();
+
+        //get index of selected element
+        int index = 1;
+        for (Node node : this.getChildren()) {
+            if (node instanceof PlaylistElement) {
+                PlaylistElement element = (PlaylistElement) node;
+                if (element.getData().getHash().equals(item.getHash())) {
+                    element.setSelected(true);
+                    return index;
+                }
+
+                index++;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Deselect all elements
+     */
+    private void deselectAllElements() {
+        for (Node node : this.getChildren()) {
+            if (node instanceof PlaylistElement) {
+                PlaylistElement element = (PlaylistElement) node;
+                element.setSelected(false);
             }
         }
     }

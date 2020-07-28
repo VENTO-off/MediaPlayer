@@ -186,7 +186,7 @@ public class ContentScrollBar extends ScrollBar {
     }
 
     /**
-     * Event on mouse pressedцц
+     * Event on mouse pressed
      */
     private void onPressed(MouseEvent e) {
         isPressed = true;

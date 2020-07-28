@@ -86,7 +86,7 @@ public class ControlSlider extends Pane {
             currentValue.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 12));
             currentValue.setWrappingWidth(valueWidth);
             currentValue.setTextAlignment(TextAlignment.RIGHT);
-            control.getChildren().add(currentValue);
+            control.getChildren().add(0, currentValue);
 
             //init total value
             totalValue = new Text();
@@ -95,7 +95,7 @@ public class ControlSlider extends Pane {
             totalValue.setFill(Color.WHITE);
             totalValue.setFont(FontManager.loadFont(Fonts.SEGOE_UI.getFontName(), 12));
             totalValue.setWrappingWidth(valueWidth);
-            control.getChildren().add(totalValue);
+            control.getChildren().add(0, totalValue);
         } else {
             currentValue = null;
             totalValue = null;

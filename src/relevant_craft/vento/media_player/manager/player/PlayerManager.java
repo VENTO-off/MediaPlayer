@@ -1,5 +1,6 @@
 package relevant_craft.vento.media_player.manager.player;
 
+import javafx.application.Platform;
 import relevant_craft.vento.media_player.gui.main.MainGui;
 import relevant_craft.vento.media_player.gui.main.elements.control.Control;
 import relevant_craft.vento.media_player.gui.main.elements.navigation.Navigation;
@@ -37,6 +38,7 @@ public class PlayerManager {
 
     private double volumeLevel;
     private PlaylistData currentPlaylist;
+    private Thread playlistLoader;
     private PlaylistItem currentSong;
     private long lastSongClick;
 
@@ -65,6 +67,8 @@ public class PlayerManager {
         this.control.getMuteButton().addClickListener(this::onMuteButtonClick);
         this.control.getSongSlider().addClickListener(this::onSongSliderClick);
         this.control.getVolumeSlider().addClickListener(this::onVolumeSliderClick);
+        this.control.getNextButton().addClickListener(this::onNextButtonClick);
+        this.control.getPreviousButton().addClickListener(this::onPreviousButtonClick);
 
         this.playerEngine.addTimeListener(this::onTimeUpdate);
         this.playerEngine.addLoadListener(this::onAudioLoad);
@@ -150,6 +154,28 @@ public class PlayerManager {
         playerEngine.setMuted(control.getMuteButton().isSelected());
     }
 
+    /**
+     * Event on next button click
+     */
+    private void onNextButtonClick() {
+        if (currentPlaylist == null || currentSong == null) {
+            return;
+        }
+
+        loadNextSong(true);
+    }
+
+    /**
+     * Event on previous button click
+     */
+    private void onPreviousButtonClick() {
+        if (currentPlaylist == null || currentSong == null) {
+            return;
+        }
+
+        loadNextSong(false);
+    }
+
 
     /******************************************************************************************************************
         PlayerEngine events
@@ -194,16 +220,67 @@ public class PlayerManager {
     }
 
     /**
+     * Load and play song
+     */
+    private void loadSong() throws FileNotFoundException {
+        //set new color
+        colorManager.setColor(currentPlaylist.getSongs().indexOf(currentSong) + 1, null);
+
+        //load song
+        playerEngine.loadAudio(currentSong);
+
+        //play song
+        playerEngine.play();
+
+        //select song
+        playlist.selectElement(currentSong, false);
+    }
+
+    /**
+     * Load next/previous song
+     */
+    private void loadNextSong(boolean isNext) {
+        //get next song index
+        int newIndex = currentPlaylist.getSongs().indexOf(currentSong) + (isNext ? 1 : -1);
+        if (newIndex < 0) {
+            newIndex = currentPlaylist.getSongs().size() - 1;
+        } else if (newIndex >= currentPlaylist.getSongs().size() - 1) {
+            newIndex = 0;
+        }
+
+        //set current song
+        currentSong = currentPlaylist.getSongs().get(newIndex);
+
+        //load next song
+        try {
+            loadSong();
+        } catch (FileNotFoundException e) {
+            System.err.println("Error loading audio \"" + currentSong.getPath() + "\"!");
+            loadNextSong(isNext);
+        }
+    }
+
+    /**
      * Load playlist
      */
     private void renderPlaylist() {
+        //clear all
         playlist.clear();
 
-        for (PlaylistItem song : currentPlaylist.getSongs()) {
-            playlist.add(song);
-        }
+        //fill playlist with songs
+        playlist.addAdd(currentPlaylist.getSongs(), currentSong);
 
+        //update playlist info
         visualization.getPlaylistInfo().setPlaylistInfo(currentPlaylist.getDisplayName(), currentPlaylist.getSongs().size(), currentPlaylist.getTime(), currentPlaylist.getSize());
+    }
+
+    /**
+     * Stop playlist loader thread
+     */
+    private void stopPlaylistLoader() {
+        if (playlistLoader != null && playlistLoader.isAlive()) {
+            playlistLoader.stop();
+        }
     }
 
     /**
@@ -215,13 +292,26 @@ public class PlayerManager {
             return;
         }
 
-        //load and render playlist
-        try {
-            currentPlaylist = playlistManager.loadPlaylist(data.getUUID());
-            renderPlaylist();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        //load playlist in thread
+        stopPlaylistLoader();
+        playlistLoader = new Thread(() -> {
+            try {
+                //show loader
+                Platform.runLater(() -> {
+                    playlist.showLoader();
+                    playlist.setLoaderText("Загрузка плейлиста");
+                });
+
+                //load playlist
+                currentPlaylist = playlistManager.loadPlaylist(data.getUUID());
+
+                //render playlist
+                Platform.runLater(this::renderPlaylist);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        playlistLoader.start();
     }
 
     /**
@@ -242,55 +332,71 @@ public class PlayerManager {
         //set current song
         currentSong = data;
 
-        //set new color
-        colorManager.setColor(index, null);
-
         //load and play song
         try {
-            playerEngine.loadAudio(data);
-            playerEngine.play();
+            loadSong();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            System.err.println("Error loading audio \"" + currentSong.getPath() + "\"!");
+            loadNextSong(true);
         }
     }
 
     /**
      * Event on drop files in playlist
      */
-    private void onDropFiles(List<File> files, int index) {
-        List<PlaylistItem> songs = new ArrayList<>();
+    private void onDropFiles(final List<File> files, int index) {
+        //load songs in thread
+        stopPlaylistLoader();
+        playlistLoader = new Thread(() -> {
+            final List<PlaylistItem> songs = new ArrayList<>();
 
-        //load audio data for each file
-        files = FileUtils.getAllFiles(files);
-        for (File file : files) {
-            try {
-                //load audio data
-                PlaylistItem song = SongUtils.getAudioData(file);
+            //show loader
+            Platform.runLater(() -> {
+                playlist.showLoader();
+                playlist.setLoaderText("Обработка треков");
+            });
 
-                //check if song already in playlist
-                if (currentPlaylist.getSongByHash(song.getHash()) != null) {
-                    continue;
+            //load audio data for each file
+            final List<File> allFiles = FileUtils.getAllFiles(files);
+
+            //update loader text
+            Platform.runLater(() -> playlist.setLoaderText("Обработка треков (" + songs.size() + "/" + allFiles.size() + ")"));
+
+            //process each file
+            for (File file : allFiles) {
+                try {
+                    //load audio data
+                    PlaylistItem song = SongUtils.getAudioData(file);
+
+                    //check if song already in playlist
+                    if (currentPlaylist.getSongByHash(song.getHash()) != null) {
+                        continue;
+                    }
+
+                    //add song
+                    songs.add(song);
+
+                    //update loader text
+                    Platform.runLater(() -> playlist.setLoaderText("Обработка треков (" + songs.size() + "/" + allFiles.size() + ")"));
+                } catch (Exception e) {
+                    System.err.println("File \"" + file.getName() + "\" isn't an audio file!");
                 }
+            }
 
-                //add song
-                songs.add(song);
+            //add songs
+            currentPlaylist.addSongs(songs, index);
+
+            //render
+            Platform.runLater(this::renderPlaylist);
+
+            //save
+            try {
+                playlistManager.savePlaylist(currentPlaylist);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-
-        //add songs
-        currentPlaylist.addSongs(songs, index);
-
-        //render
-        renderPlaylist();
-
-        //save
-        try {
-            playlistManager.savePlaylist(currentPlaylist);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
+        playlistLoader.start();
     }
 
     /**

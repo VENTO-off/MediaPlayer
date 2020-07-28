@@ -288,7 +288,7 @@ public class NavigationListElement extends Pane {
                 0,
                 true,
                 CycleMethod.NO_CYCLE,
-                new Stop(0, color),
+                new Stop(0, Color.color(color.getRed(), color.getGreen(), color.getBlue(), 0.5)),
                 new Stop(1, Color.TRANSPARENT)
         );
         this.setBackground(new Background(new BackgroundFill(gradient, CORNER_RADII, this.getPadding())));

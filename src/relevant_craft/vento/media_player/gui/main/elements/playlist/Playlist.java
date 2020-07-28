@@ -1,5 +1,6 @@
 package relevant_craft.vento.media_player.gui.main.elements.playlist;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
@@ -15,6 +16,8 @@ import relevant_craft.vento.media_player.gui.main.elements.visualization.Visuali
 import relevant_craft.vento.media_player.manager.picture.PictureManager;
 import relevant_craft.vento.media_player.manager.picture.Pictures;
 
+import java.util.List;
+
 public class Playlist extends ScrollPane {
     private final Stage stage;
     private final AnchorPane layout;
@@ -27,6 +30,8 @@ public class Playlist extends ScrollPane {
     private Pane content;
     private PlaylistList playlist;
     private ImageView cover;
+    private Loader loader;
+    private Thread renderer;
 
     /**
      * Init playlist bar
@@ -44,6 +49,7 @@ public class Playlist extends ScrollPane {
         this.initPlaylist();
         this.initCoverArt();
         this.scrollBar = this.initScrollbar();
+        this.initLoader();
 
         layout.getChildren().add(0, this);
     }
@@ -105,6 +111,35 @@ public class Playlist extends ScrollPane {
     }
 
     /**
+     * Init loader area
+     */
+    private void initLoader() {
+        loader = new Loader(this.getPrefWidth(), this.getPrefHeight(), this.getLayoutX(), this.getLayoutY());
+        layout.getChildren().add(loader);
+    }
+
+    /**
+     * Show loader
+     */
+    public void showLoader() {
+        loader.show();
+    }
+
+    /**
+     * Hide loader
+     */
+    public void hideLoader() {
+        loader.hide();
+    }
+
+    /**
+     * Set loader text
+     */
+    public void setLoaderText(String value) {
+        loader.updateText(value);
+    }
+
+    /**
      * Calculate playlist height
      */
     private void calculateHeight() {
@@ -122,6 +157,53 @@ public class Playlist extends ScrollPane {
     }
 
     /**
+     * Add all elements to playlist (runs a new thread)
+     */
+    public void addAdd(List<PlaylistItem> data, PlaylistItem itemToSelect) {
+        if (renderer != null && renderer.isAlive()) {
+            renderer.stop();
+        }
+
+        renderer = new Thread(() -> {
+            //render
+            playlist.addAllElements(data);
+
+            Platform.runLater(() -> {
+                //rerender
+                playlist.calculateOrderNumbers();
+                calculateHeight();
+
+                //hide loader
+                loader.hide();
+            });
+
+            sleep(20);
+
+            Platform.runLater(() -> selectElement(itemToSelect, true));
+        });
+        renderer.start();
+    }
+
+    /**
+     * Select element in playlist
+     */
+    public void selectElement(PlaylistItem element, boolean doScroll) {
+        //select current track
+        int index = playlist.selectElement(element);
+
+        //scroll to current track
+        if (index != 0 && doScroll) {
+            if (index <= 6) {
+                this.setVvalue(0);
+            } else if (index >= playlist.getSize() - 6) {
+                this.setVvalue(100);
+            } else {
+                this.setVvalue(index * 100D / playlist.getSize());
+            }
+        }
+    }
+
+    /**
      * Clear playlist
      */
     public void clear() {
@@ -133,5 +215,14 @@ public class Playlist extends ScrollPane {
      */
     public PlaylistList getPlaylist() {
         return playlist;
+    }
+
+    /**
+     * Sleep thread
+     */
+    private void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (Exception ignored) {}
     }
 }

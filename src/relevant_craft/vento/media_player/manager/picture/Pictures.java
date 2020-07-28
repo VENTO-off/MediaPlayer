@@ -20,6 +20,7 @@ public enum Pictures {
     VU_METER_LAYER("vu_meter_layer.png"),
     SEARCH_ICON("search_icon.png"),
     CLEAR_ICON("clear_icon.png"),
+    LOADER("loader_sprite.png"),
     TEST_COVER("test_cover.png"),
     ;
 

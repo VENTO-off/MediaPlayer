@@ -65,9 +65,6 @@ public class Loader extends Pane {
      * Show loader area
      */
     public void show() {
-        this.setVisible(true);
-
-        currentText = null;
         animation.play();
 
         textAnimation = new Thread(() -> {
@@ -83,6 +80,8 @@ public class Loader extends Pane {
             }
         });
         textAnimation.start();
+
+        this.setVisible(true);
     }
 
     /**
@@ -112,7 +111,7 @@ public class Loader extends Pane {
      * Render text
      */
     private void renderText() {
-        text.setText(currentText + String.join("", Collections.nCopies(dots, ".")));
+        text.setText((currentText == null ? "" : currentText) + String.join("", Collections.nCopies(dots, ".")));
     }
 
     /**

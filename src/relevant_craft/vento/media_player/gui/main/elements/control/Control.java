@@ -1,7 +1,9 @@
 package relevant_craft.vento.media_player.gui.main.elements.control;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -16,6 +18,9 @@ import relevant_craft.vento.media_player.manager.font.Fonts;
 import relevant_craft.vento.media_player.manager.picture.PictureManager;
 import relevant_craft.vento.media_player.manager.picture.Pictures;
 import relevant_craft.vento.media_player.utils.TextUtils;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class Control extends Pane {
     private static final double height = 70;
@@ -107,12 +112,30 @@ public class Control extends Pane {
      */
     private void initCoverArt() {
         cover = new ImageView();
-        //TODO remove test cover
-        cover.setImage(PictureManager.loadImage(Pictures.TEST_COVER.getIconName()));
+        cover.setImage(colorizeLogo(colorManager.getFinalColor()));
         cover.setFitWidth(height);
         cover.setFitHeight(height);
         cover.setPreserveRatio(true);
         this.getChildren().add(cover);
+    }
+
+    /**
+     * Colorize logo
+     */
+    private Image colorizeLogo(Color color) {
+        BufferedImage logo = SwingFXUtils.fromFXImage(PictureManager.loadImage(Pictures.LOGO.getIconName()), null);
+
+        int width = logo.getWidth();
+        int height = logo.getHeight();
+
+        BufferedImage colored = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics = colored.getGraphics();
+        graphics.setColor(new java.awt.Color((int) color.getRed() * 255, (int) color.getGreen() * 255, (int) color.getBlue() * 255));
+        graphics.drawRect(0, 0, width, height);
+        graphics.drawImage(logo, 0, 0, null);
+        graphics.dispose();
+
+        return SwingFXUtils.toFXImage(colored, null);
     }
 
     /**
@@ -180,6 +203,7 @@ public class Control extends Pane {
      */
     private void onChangeColor(Color color) {
         updateColor(color);
+        cover.setImage(colorizeLogo(colorManager.getFinalColor()));
     }
 
     /**

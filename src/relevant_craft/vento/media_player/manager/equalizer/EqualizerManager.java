@@ -152,12 +152,6 @@ public class EqualizerManager {
                                 Platform.runLater(() -> equalizer.setBandLevel(band, audioBandBuffer[band]));
                             }
                         }
-                    } else {
-                        //reset to default
-                        for (int i = 0; i < audioBandBuffer.length; i++) {
-                            final int band = i;
-                            Platform.runLater(() -> equalizer.setBandLevel(band, 0));
-                        }
                     }
 
 //                    //trails

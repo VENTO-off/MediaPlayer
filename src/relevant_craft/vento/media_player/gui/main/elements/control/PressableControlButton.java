@@ -16,6 +16,7 @@ public class PressableControlButton extends ControlButton {
     public PressableControlButton(double positionX, double positionY, Pictures icon) {
         super(positionX, positionY, icon);
         this.setOnMouseReleased(null);
+        this.setOnMousePressed(null);
     }
 
     /**
@@ -25,24 +26,30 @@ public class PressableControlButton extends ControlButton {
         if (!canClick()) {
             return;
         }
+
         isSelected = !isSelected;
+        animate();
         super.onClick(e);
     }
 
     /**
-     * Play animation on mouse press
+     * Play animation
      */
-    protected void onPressed(MouseEvent e) {
-        if (!canClick()) {
-            return;
-        }
-
+    private void animate() {
         if (animation != null && animation.getStatus() == Animation.Status.RUNNING) {
             animation.stop();
         }
 
-        animation = new Timeline(new KeyFrame(animationTime, new KeyValue(circle.opacityProperty(), (circle.getOpacity() > 0.0 ? 0.0 : opacity))));
+        animation = new Timeline(new KeyFrame(animationTime, new KeyValue(circle.opacityProperty(), (isSelected ? opacity : 0.0))));
         animation.play();
+    }
+
+    /**
+     * Set selected value
+     */
+    public void setSelected(boolean selected) {
+        isSelected = selected;
+        animate();
     }
 
     /**

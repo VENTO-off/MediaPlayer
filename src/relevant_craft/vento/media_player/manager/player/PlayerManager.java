@@ -13,6 +13,7 @@ import relevant_craft.vento.media_player.manager.color.ColorManager;
 import relevant_craft.vento.media_player.manager.equalizer.EqualizerManager;
 import relevant_craft.vento.media_player.manager.playlist.PlaylistData;
 import relevant_craft.vento.media_player.manager.playlist.PlaylistManager;
+import relevant_craft.vento.media_player.manager.settings.SettingsManager;
 import relevant_craft.vento.media_player.manager.vumeter.VUMeterManager;
 import relevant_craft.vento.media_player.utils.FileUtils;
 import relevant_craft.vento.media_player.utils.SongUtils;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class PlayerManager {
     private final MainGui mainGui;
@@ -35,12 +37,15 @@ public class PlayerManager {
     private final EqualizerManager equalizer;
     private final PlaylistManager playlistManager;
     private final ColorManager colorManager;
+    private final SettingsManager settingsManager;
 
     private double volumeLevel;
     private PlaylistData currentPlaylist;
     private Thread playlistLoader;
     private Thread wait;
     private PlaylistItem currentSong;
+    private Random random;
+    private List<String> randomOrder;
     private long lastSongClick;
 
     /**
@@ -59,17 +64,27 @@ public class PlayerManager {
         this.equalizer = new EqualizerManager(visualization.getEqualizer());
         this.playlistManager = new PlaylistManager();
         this.colorManager = ColorManager.getInstance();
+        this.settingsManager = SettingsManager.getInstance();
+        this.random = new Random();
+        this.randomOrder = new ArrayList<>();
         this.lastSongClick = System.currentTimeMillis();
 
         this.title.getCloseButton().addClickListener(this::onCloseButtonClick);
         this.title.getMinimizeButton().addClickListener(this::onMinimizeButtonClick);
 
+        this.volumeLevel = settingsManager.getVolumeLevel();
+        this.control.getVolumeSlider().setProgress(settingsManager.getVolumeLevel());
+        this.control.getMuteButton().setSelected(settingsManager.isMuted());
+        this.control.getRepeatButton().setSelected(settingsManager.isRepeatEnabled());
+        this.control.getRandomButton().setSelected(settingsManager.isRandomEnabled());
         this.control.getPlayButton().addClickListener(this::onPlayButtonClick);
         this.control.getMuteButton().addClickListener(this::onMuteButtonClick);
         this.control.getSongSlider().addClickListener(this::onSongSliderClick);
         this.control.getVolumeSlider().addClickListener(this::onVolumeSliderClick);
         this.control.getNextButton().addClickListener(this::onNextButtonClick);
         this.control.getPreviousButton().addClickListener(this::onPreviousButtonClick);
+        this.control.getRepeatButton().addClickListener(this::onRepeatButtonClick);
+        this.control.getRandomButton().addClickListener(this::onRandomButtonClick);
 
         this.playerEngine.addTimeListener(this::onTimeUpdate);
         this.playerEngine.addLoadListener(this::onAudioLoad);
@@ -104,7 +119,7 @@ public class PlayerManager {
      * Event on minimize button click
      */
     private void onMinimizeButtonClick() {
-
+        this.mainGui.getStage().setIconified(true);
     }
 
 
@@ -136,6 +151,9 @@ public class PlayerManager {
 
         playerEngine.setVolume(volumeLevel);
         playerEngine.setMuted(control.getMuteButton().isSelected());
+
+        settingsManager.setVolumeLevel(volumeLevel);
+        settingsManager.setMuted(control.getMuteButton().isSelected());
     }
 
     /**
@@ -154,6 +172,8 @@ public class PlayerManager {
 
         playerEngine.setVolume(percentage);
         playerEngine.setMuted(control.getMuteButton().isSelected());
+
+        settingsManager.setVolumeLevel(volumeLevel);
     }
 
     /**
@@ -176,6 +196,35 @@ public class PlayerManager {
         }
 
         loadNextSong(false);
+    }
+
+    /**
+     * Event on repeat button click
+     */
+    private void onRepeatButtonClick() {
+        if (control.getRandomButton().isSelected()) {
+            control.getRandomButton().setSelected(false);
+            randomOrder.clear();
+        }
+
+        settingsManager.setRepeatEnabled(control.getRepeatButton().isSelected());
+        settingsManager.setRandomEnabled(control.getRandomButton().isSelected());
+    }
+
+    /**
+     * Event on random button click
+     */
+    private void onRandomButtonClick() {
+        if (control.getRepeatButton().isSelected()) {
+            control.getRepeatButton().setSelected(false);
+        }
+
+        if (!control.getRandomButton().isSelected()) {
+            randomOrder.clear();
+        }
+
+        settingsManager.setRepeatEnabled(control.getRepeatButton().isSelected());
+        settingsManager.setRandomEnabled(control.getRandomButton().isSelected());
     }
 
 
@@ -249,12 +298,45 @@ public class PlayerManager {
      * Load next/previous song
      */
     private void loadNextSong(boolean isNext) {
-        //get next song index
-        int newIndex = currentPlaylist.getSongs().indexOf(currentSong) + (isNext ? 1 : -1);
-        if (newIndex < 0) {
-            newIndex = currentPlaylist.getSongs().size() - 1;
-        } else if (newIndex >= currentPlaylist.getSongs().size() - 1) {
-            newIndex = 0;
+        if (wait != null && wait.isAlive()) {
+            wait.stop();
+        }
+
+        int newIndex;
+
+        if (control.getRepeatButton().isSelected()) {           //if repeat enabled
+            //get current song
+            newIndex = currentPlaylist.getSongs().indexOf(currentSong);
+        } else if (control.getRandomButton().isSelected()) {    //if random enabled
+            //get song index from random history
+            try {
+                int index = randomOrder.indexOf(currentSong.getHash()) + (isNext ? 1 : -1);
+                if (index <= 0) {
+                    index = 0;
+                }
+                String hash = randomOrder.get(index);
+                newIndex = currentPlaylist.getSongs().indexOf(currentPlaylist.getSongByHash(hash));
+            } catch (Exception e) {
+                if (randomOrder.size() == currentPlaylist.getSongs().size()) {
+                    randomOrder.clear();
+                }
+
+                //get random song
+                String hash;
+                do {
+                    newIndex = random.nextInt(currentPlaylist.getSongs().size());
+                    hash = currentPlaylist.getSongs().get(newIndex).getHash();
+                } while (randomOrder.contains(hash));
+                randomOrder.add(hash);
+            }
+        } else {                                                //if next song
+            //get next song index
+            newIndex = currentPlaylist.getSongs().indexOf(currentSong) + (isNext ? 1 : -1);
+            if (newIndex < 0) {
+                newIndex = currentPlaylist.getSongs().size() - 1;
+            } else if (newIndex >= currentPlaylist.getSongs().size() - 1) {
+                newIndex = 0;
+            }
         }
 
         //set current song
@@ -358,6 +440,13 @@ public class PlayerManager {
 
         //set current song
         currentSong = data;
+
+        //change random order
+        randomOrder.remove(currentSong.getHash());
+        if (!control.getRandomButton().isSelected()) {
+            randomOrder.clear();
+        }
+        randomOrder.add(currentSong.getHash());
 
         //load and play song
         try {

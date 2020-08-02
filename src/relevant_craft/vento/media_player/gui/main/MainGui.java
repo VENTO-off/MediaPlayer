@@ -72,6 +72,13 @@ public class MainGui extends Pane {
     }
 
     /**
+     * Return stage
+     */
+    public Stage getStage() {
+        return stage;
+    }
+
+    /**
      * Return the layout of main window
      */
     public AnchorPane getLayout() {

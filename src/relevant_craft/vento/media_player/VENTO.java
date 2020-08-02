@@ -9,6 +9,7 @@ import relevant_craft.vento.media_player.gui.main.MainGui;
 import relevant_craft.vento.media_player.manager.color.ColorManager;
 import relevant_craft.vento.media_player.manager.directory.DirectoryManager;
 import relevant_craft.vento.media_player.manager.player.PlayerManager;
+import relevant_craft.vento.media_player.manager.settings.SettingsManager;
 
 public class VENTO extends Application {
     public static final String PLAYER   = "Richen";
@@ -16,11 +17,14 @@ public class VENTO extends Application {
 
     @Override
     public void start(Stage stage) {
+        //init settings manager
+        new SettingsManager();
+
         //init directory manager
-        DirectoryManager directoryManager = new DirectoryManager();
+        new DirectoryManager();
 
         //init color manager
-        ColorManager colorManager = new ColorManager();
+        new ColorManager();
 
         //init gui
         MainGui mainGui = new MainGui(stage);
@@ -32,7 +36,7 @@ public class VENTO extends Application {
         stage.show();
 
         //init player manager
-        PlayerManager playerManager = new PlayerManager();
+        new PlayerManager();
     }
 
     public static void main(String[] args) {
